@@ -12,7 +12,7 @@ export default {
     daisyui,
   ],
   daisyui: {
-    themes: ["winter", "light", "cmyk"],
+    themes: ["acid", "light", "cmyk"],
   },
 }
 
