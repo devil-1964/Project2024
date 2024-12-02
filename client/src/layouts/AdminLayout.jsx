@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
-import { BarChart, Home, Menu, Phone, Users } from 'lucide-react'; // Lucide icon for hamburger menu
+import { Link, Outlet, useNavigate } from 'react-router-dom';  // Use Link from react-router-dom
+import { Home, Menu, Plus, Users } from 'lucide-react'; // Removed BarChart and Phone icons
 import logo from "../assets/dcrustLogo.png";
 import dp from "../assets/profile.png";
 
-const RootLayout = () => {
+const AdminLayout = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -23,10 +23,12 @@ const RootLayout = () => {
 
                     {/* Desktop Navbar Links */}
                     <div className="hidden lg:flex gap-4 items-center">
-                        <a href="/" className="text-white font-semibold hover:text-yellow-400 flex gap-1"><Home />Home</a>
-                        <a href="/team" className="text-white font-semibold hover:text-yellow-400 flex gap-1"><Users />Our Team</a>
-                        <a href="/contact-us" className="text-white hover:text-yellow-400 font-semibold flex gap-1"><Phone />Contact Us</a>
-                        <a href="/placement-statistics" className="text-white hover:text-yellow-400 font-semibold flex gap-1"><BarChart />Placement Statistics</a>
+                        <Link to="/admin/jobs" className="text-white font-semibold hover:text-yellow-400 flex gap-1">
+                            <Home /> Home
+                        </Link>
+                        <Link to="/admin/job-forms" className="text-white font-semibold hover:text-yellow-400 flex gap-1">
+                            <Plus /> Add Jobs
+                        </Link>
 
                         {isAuthenticated && (
                             <div className="dropdown dropdown-end">
@@ -67,10 +69,12 @@ const RootLayout = () => {
                         <img src={logo} alt="logo" className="w-20 mx-auto border-4 border-black" />
                     </div>
                     <h1 className='text-white text-xl font-bold text-center'>Training & Placement Portal <br /> DCRUST, Murthal </h1>
-                    <a href="/" className="text-white py-2 hover:text-yellow-400 font-semibold flex gap-1"><Home />Home</a>
-                    <a href="/team" className="text-white py-2 hover:text-yellow-400 font-semibold flex gap-1"><Users />Our Team</a>
-                    <a href="/contact-us" className="text-white py-2 hover:text-yellow-400 font-semibold flex gap-1"><Phone />Contact Us</a>
-                    <a href="/placement-statistics" className="text-white py-2 hover:text-yellow-400 font-semibold flex gap-1"><BarChart />Placement Statistics</a>
+                    <Link to="/jobs" className="text-white py-2 hover:text-yellow-400 font-semibold flex gap-1">
+                        <Home /> Home
+                    </Link>
+                    <Link to="/admin/jobs" className="text-white py-2 hover:text-yellow-400 font-semibold flex gap-1">
+                        <Plus /> Add Jobs
+                    </Link>
 
                     {isAuthenticated && (
                         <div className="dropdown dropdown-end">
@@ -81,7 +85,6 @@ const RootLayout = () => {
                             </div>
                             <ul tabIndex={0} className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
                                 <li><a className="justify-between">Profile</a></li>
-                                <li><a>Settings</a></li>
                                 <li><a>Logout</a></li>
                             </ul>
                         </div>
@@ -101,20 +104,9 @@ const RootLayout = () => {
                 <Outlet />
             </main>
 
-            {/* Footer */}
-            <footer className="bg-blue-950 text-white py-6 mt-8">
-                <div className="max-w-7xl mx-auto text-center">
-                    <p className="text-sm">© {new Date().getFullYear()} DCRUST. All rights reserved.</p>
-                    <div className="mt-4 space-x-6">
-                        <a href="/privacy-policy" className="text-white hover:text-yellow-400">Privacy Policy</a>
-                        <a href="/terms-of-service" className="text-white hover:text-yellow-400">Terms of Service</a>
-                        <a href="/contact-us" className="text-white hover:text-yellow-400">Contact Us</a>
-                    </div>
-                </div>
-            </footer>
 
         </>
     );
 };
 
-export default RootLayout;
+export default AdminLayout;

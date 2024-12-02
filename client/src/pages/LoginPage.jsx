@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import toast from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 
 const LoginPage = () => {
@@ -6,7 +7,7 @@ const LoginPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    alert(`Logged in as ${role === 'admin' ? 'Admin' : 'Student'}`);
+    toast.success(`Logged in as ${role === 'admin' ? 'Admin' : 'Student'}`);
   };
 
   return (
