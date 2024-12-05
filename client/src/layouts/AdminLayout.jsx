@@ -1,49 +1,49 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { Link, Outlet, useNavigate } from 'react-router-dom';  // Use Link from react-router-dom
-import { Home, Menu, Plus, Users } from 'lucide-react'; // Removed BarChart and Phone icons
+import { Home, LayoutDashboard, LogOut, Menu, Plus,  X } from 'lucide-react'; // Removed BarChart and Phone icons
 import logo from "../assets/dcrustLogo.png";
-import dp from "../assets/profile.png";
+import toast from 'react-hot-toast';
 
 const AdminLayout = () => {
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [isAuthenticated, setIsAuthenticated] = useState(true);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+    const navigate = useNavigate();
     const toggleAuth = () => setIsAuthenticated(!isAuthenticated);
     const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
-    const navigate = useNavigate();
+    const handleLogout = () => {
+        localStorage.removeItem('Authorization');
+        toast.success('Logged out successfully');
+        navigate('/login');
+    }
 
     return (
         <>
             <header className="fixed top-0 left-0 w-full z-10 bg-blue-950 p-4">
                 <div className="flex justify-between items-center">
                     {/* Logo */}
-                    <div className="flex items-center gap-2">
+                    <Link to='/'>
+                    <div className="flex items-center gap-2 hover:scale-110 transition-transform ease-in">
                         <img src={logo} alt="logo" className="w-12 border-1 border-black" />
                     </div>
+                    </Link>
 
                     {/* Desktop Navbar Links */}
                     <div className="hidden lg:flex gap-4 items-center">
-                        <Link to="/admin/jobs" className="text-white font-semibold hover:text-yellow-400 flex gap-1">
-                            <Home /> Home
-                        </Link>
-                        <Link to="/admin/job-forms" className="text-white font-semibold hover:text-yellow-400 flex gap-1">
-                            <Plus /> Add Jobs
-                        </Link>
-
                         {isAuthenticated && (
-                            <div className="dropdown dropdown-end">
-                                <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
-                                    <div className="w-10 rounded-full">
-                                        <img alt="User Profile" src={dp} className="bg-white" />
-                                    </div>
-                                </div>
-                                <ul tabIndex={0} className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
-                                    <li><a className="justify-between">Profile</a></li>
-                                    <li><a>Settings</a></li>
-                                    <li><a>Logout</a></li>
-                                </ul>
-                            </div>
+                            <>
+                                <Link to="/admin/jobs" className="text-white font-semibold hover:scale-110 transition-transform ease-in hover:text-yellow-400 flex gap-1">
+                                    <LayoutDashboard /> Dashboard
+                                </Link>
+                                <Link to="/admin/job-forms" className="text-white hover:scale-110 transition-transform ease-in font-semibold hover:text-yellow-400 flex gap-1">
+                                    <Plus /> Add Jobs
+                                </Link>
+                                <button onClick={() => handleLogout()} className="text-white py-2 hover:scale-110 transition-transform ease-in hover:text-yellow-400 font-semibold flex gap-1"><LogOut />Logout</button>
+                            </>
                         )}
+
+
+
 
                         {!isAuthenticated && (
                             <div className="flex gap-2">
@@ -56,39 +56,34 @@ const AdminLayout = () => {
                     {/* Mobile Hamburger Menu */}
                     <div className="lg:hidden flex items-center">
                         <button onClick={toggleMobileMenu} className="btn btn-ghost text-white">
-                            <Menu className="w-6 h-6" />
+                            {isMobileMenuOpen ? (<X className="w-6 h-6" />) : (<Menu className="w-6 h-6" />)}
+
                         </button>
                     </div>
                 </div>
             </header>
 
             {/* Sidebar for Mobile */}
-            <div className={`lg:hidden fixed top-0 left-0 h-full bg-blue-950 p-4 transition-transform ${isMobileMenuOpen ? 'transform translate-x-0' : 'transform -translate-x-full'} w-64 z-20`}>
+            <div className={`lg:hidden fixed top-0 left-0 h-full bg-blue-950 opacity-95 p-4 transition-transform ${isMobileMenuOpen ? 'transform translate-x-0' : 'transform -translate-x-full'} w-64 z-20`}>
                 <div className="flex flex-col gap-4">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center">
                         <img src={logo} alt="logo" className="w-20 mx-auto border-4 border-black" />
                     </div>
                     <h1 className='text-white text-xl font-bold text-center'>Training & Placement Portal <br /> DCRUST, Murthal </h1>
-                    <Link to="/jobs" className="text-white py-2 hover:text-yellow-400 font-semibold flex gap-1">
-                        <Home /> Home
-                    </Link>
-                    <Link to="/admin/jobs" className="text-white py-2 hover:text-yellow-400 font-semibold flex gap-1">
-                        <Plus /> Add Jobs
-                    </Link>
-
                     {isAuthenticated && (
-                        <div className="dropdown dropdown-end">
-                            <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
-                                <div className="w-10 rounded-full">
-                                    <img alt="User Profile" src={dp} className="bg-white" />
-                                </div>
-                            </div>
-                            <ul tabIndex={0} className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
-                                <li><a className="justify-between">Profile</a></li>
-                                <li><a>Logout</a></li>
-                            </ul>
-                        </div>
+                        <>
+                            <Link to="/admin/jobs" className="text-white hover:scale-105 transition-transform ease-in font-semibold py-1 hover:text-yellow-400 flex gap-1">
+                                <LayoutDashboard />Admin Dashboard
+                            </Link>
+                            <Link to="/admin/job-forms" className="text-white hover:scale-105 transition-transform ease-in py-1 hover:text-yellow-400 font-semibold flex gap-1">
+                                <Plus /> Add Jobs
+                            </Link>
+                            <button onClick={() => handleLogout()} className="text-white py-1 hover:scale-105 transition-transform ease-in hover:text-yellow-400 font-semibold flex gap-1"><LogOut />Logout</button>
+                        </>
                     )}
+
+
+
 
                     {!isAuthenticated && (
                         <div className="flex flex-col gap-2">
