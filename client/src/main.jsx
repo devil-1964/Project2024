@@ -21,6 +21,7 @@ import StudentLayout from './layouts/StudentLayout';
 import { Toaster } from 'react-hot-toast';
 import JobEdit from './admin/JobEdit';
 import Profile from './students/Profile';
+import StudentDetailsForm from './students/StudentDetailsForm';
 
 const router = createBrowserRouter([
   {
@@ -78,6 +79,14 @@ const router = createBrowserRouter([
       {
         path: 'jobs',  // This is now relative to '/admin'
         element: <JobPage />,
+      },
+      {
+        path: 'jobs/:id',  // This is now relative to '/admin'
+        element: <JobApplicationForm />,
+      },
+      {
+        path: 'new',  // This is now relative to '/admin'
+        element: <StudentDetailsForm />,
       },
       {
         path: 'profile',  // This is now relative to '/admin'

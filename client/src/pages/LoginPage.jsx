@@ -1,13 +1,47 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import toast from 'react-hot-toast';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const LoginPage = () => {
-  const [role, setRole] = useState('student');
-
-  const handleSubmit = (e) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    toast.success(`Logged in as ${role === 'admin' ? 'Admin' : 'Student'}`);
+
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_URL_API}/api/auth/login`, // Replace with your backend login endpoint
+        { email, password }
+      );
+
+      const {token, user } = response.data; // Assuming the backend returns a JWT token and user role
+      localStorage.setItem('Authorization', `${token}`);
+      toast.success('Logged in successfully');
+
+      // Redirect based on the user's role
+      if (user.role === 'admin') {
+        navigate('/admin/jobs'); // Replace with your admin dashboard route
+      } else if (user.role === 'student') {
+        if(user.isFirstLogin)
+        {
+          navigate('/student/new')
+        }
+        else
+        {
+          navigate('/student/dashboard')
+        }
+      } else {
+        navigate('/'); // Default route
+      }
+    } catch (error) {
+      if (error.response && error.response.data && error.response.data.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error('Login failed. Please try again.');
+      }
+    }
   };
 
   return (
@@ -17,19 +51,6 @@ const LoginPage = () => {
           <h2 className="text-center text-2xl font-bold">Login</h2>
           <form onSubmit={handleSubmit}>
             <div className="form-control">
-              <label className="label"><span className='label-text'>
-                Select Role</span></label>
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                className="select select-bordered w-full"
-              >
-                <option value="student">Student</option>
-                <option value="admin">Admin</option>
-              </select>
-            </div>
-
-            <div className="form-control ">
               <label className="label">
                 <span className="label-text">Email</span>
               </label>
@@ -37,11 +58,13 @@ const LoginPage = () => {
                 type="email"
                 placeholder="Enter your email"
                 className="input input-bordered"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
 
-            <div className="form-control ">
+            <div className="form-control">
               <label className="label">
                 <span className="label-text">Password</span>
               </label>
@@ -49,6 +72,8 @@ const LoginPage = () => {
                 type="password"
                 placeholder="Enter your password"
                 className="input input-bordered"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 required
               />
               <label className="label">
@@ -66,7 +91,7 @@ const LoginPage = () => {
           </form>
 
           <p className="text-center mt-4">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Link to='/signup' className='link link-hover'>
               Signup
             </Link>

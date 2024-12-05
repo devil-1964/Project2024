@@ -1,23 +1,40 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import { Briefcase, MapPin, Building, Calendar, Code, Plus } from 'lucide-react';
-
-let mockJobs = [
-    { _id: '1', title: 'Software Engineer', description: 'Develop and maintain software applications.', location: 'Remote', company: 'Tech Co.', deadline: '2024-12-31', skills: 'JavaScript, Node.js, React' },
-    { _id: '2', title: 'Data Analyst', description: 'Analyze data to provide insights and reports.', location: 'New York, USA', company: 'DataTech Inc.', deadline: '2024-11-30', skills: 'Python, SQL, Data Visualization' },
-    { _id: '3', title: 'UI/UX Designer', description: 'Design intuitive and user-friendly interfaces.', location: 'London, UK', company: 'DesignPro', deadline: '2024-12-15', skills: 'Figma, Adobe XD, HTML, CSS' },
-];
+import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
 
 const JobForm = () => {
+    const [adminId, setAdminId] = useState(null);
     const [job, setJob] = useState({
-        title: '',
-        description: '',
+        jobTitle: '',
+        jobDescription: '',
         location: '',
         company: '',
-        deadline: '',
-        skills: '',
+        lastDateToApply: '',
+        requiredSkills: '', // Keep as a string for input
+        adminId: adminId,
     });
-    const [message, setMessage] = useState('');
 
+    // Decode token and extract admin ID
+    const decodeToken = (token) => {
+        try {
+            const decoded = jwtDecode(token);
+            setAdminId(decoded.userId);
+        } catch (error) {
+            console.error('Error decoding token', error);
+            toast.error('Failed to decode token');
+        }
+    };
+
+    useEffect(() => {
+        const token = localStorage.getItem('Authorization');
+        if (token) {
+            decodeToken(token); // Decode token to set adminId
+        }
+    }, []);
+
+    // Handle form input changes
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setJob((prevJob) => ({
@@ -26,44 +43,70 @@ const JobForm = () => {
         }));
     };
 
-    const handleSubmit = (e) => {
+    // Handle form submission (Post job to server)
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        const newJob = { ...job, _id: String(mockJobs.length + 1) };
-        mockJobs.push(newJob);
-        setMessage('Job added successfully!');
-        setJob({
-            title: '',
-            description: '',
-            location: '',
-            company: '',
-            deadline: '',
-            skills: '',
-        });
+
+        if (!adminId) {
+            toast.error('Admin not authenticated!');
+            return;
+        }
+
+        // Convert requiredSkills from string to an array
+        const skillsArray = job.requiredSkills.trim().split(',');
+
+        // Create the job object with the array skills
+        const newJob = {
+            ...job,
+            requiredSkills: skillsArray,
+            adminId
+        };
+
+        try {
+            // Post the job to the server
+            const response = await axios.post(`${import.meta.env.VITE_URL_API}/api/jobs/create`, newJob
+                , {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
+                    },
+                }
+
+            );
+            toast.success('Job posted successfully!');
+            setJob({
+                jobTitle: '',
+                jobDescription: '',
+                location: '',
+                company: '',
+                lastDateToApply: '',
+                requiredSkills: '', // Reset to an empty string
+                adminId: adminId,
+            });
+        } catch (error) {
+            console.error('Error posting job:', error);
+            toast.error('Failed to post job. Please try again.');
+        }
     };
 
     return (
         <div className="container mx-auto px-4 py-8">
+            {/* Toaster for notifications */}
             <div className="max-w-7xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
                 <div className="bg-gradient-to-r from-blue-900 to-blue-900 p-6">
                     <h2 className="text-3xl font-bold text-white text-center">Add New Job</h2>
                 </div>
-                {message && (
-                    <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6" role="alert">
-                        <p className="font-bold">Success!</p>
-                        <p>{message}</p>
-                    </div>
-                )}
+
                 <form onSubmit={handleSubmit} className="p-6 space-y-6">
                     <div className="space-y-2">
-                        <label htmlFor="title" className="flex items-center text-sm font-medium text-gray-700">
+                        <label htmlFor="jobTitle" className="flex items-center text-sm font-medium text-gray-700">
                             <Briefcase className="w-5 h-5 mr-2 text-blue-950" />
                             Job Title
                         </label>
                         <input
                             type="text"
-                            id="title"
-                            name="title"
-                            value={job.title}
+                            id="jobTitle"
+                            name="jobTitle"
+                            value={job.jobTitle}
                             onChange={handleInputChange}
                             className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
                             required
@@ -71,14 +114,14 @@ const JobForm = () => {
                     </div>
 
                     <div className="space-y-2">
-                        <label htmlFor="description" className="flex items-center text-sm font-medium text-gray-700">
+                        <label htmlFor="jobDescription" className="flex items-center text-sm font-medium text-gray-700">
                             <Briefcase className="w-5 h-5 mr-2 text-blue-950" />
                             Job Description
                         </label>
                         <textarea
-                            id="description"
-                            name="description"
-                            value={job.description}
+                            id="jobDescription"
+                            name="jobDescription"
+                            value={job.jobDescription}
                             onChange={handleInputChange}
                             className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
                             rows="4"
@@ -119,15 +162,15 @@ const JobForm = () => {
                     </div>
 
                     <div className="space-y-2">
-                        <label htmlFor="deadline" className="flex items-center text-sm font-medium text-gray-700">
+                        <label htmlFor="lastDateToApply" className="flex items-center text-sm font-medium text-gray-700">
                             <Calendar className="w-5 h-5 mr-2 text-blue-950" />
                             Application Deadline
                         </label>
                         <input
                             type="date"
-                            id="deadline"
-                            name="deadline"
-                            value={job.deadline}
+                            id="lastDateToApply"
+                            name="lastDateToApply"
+                            value={job.lastDateToApply}
                             onChange={handleInputChange}
                             className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
                             required
@@ -135,16 +178,17 @@ const JobForm = () => {
                     </div>
 
                     <div className="space-y-2">
-                        <label htmlFor="skills" className="flex items-center text-sm font-medium text-gray-700">
+                        <label htmlFor="requiredSkills" className="flex items-center text-sm font-medium text-gray-700">
                             <Code className="w-5 h-5 mr-2 text-blue-950" />
                             Required Skills
                         </label>
                         <input
                             type="text"
-                            id="skills"
-                            name="skills"
-                            value={job.skills}
+                            id="requiredSkills"
+                            name="requiredSkills"
+                            value={job.requiredSkills}
                             onChange={handleInputChange}
+                            placeholder="Enter skills separated by spaces"
                             className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
                             required
                         />
@@ -166,4 +210,3 @@ const JobForm = () => {
 };
 
 export default JobForm;
-

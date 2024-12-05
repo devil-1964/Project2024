@@ -1,7 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import {  Pin, Edit, Bell, MessageCircle, Briefcase, HelpCircle, List,  CloudSun, CloudMoon, ChevronRight } from 'lucide-react';
+import { jwtDecode } from 'jwt-decode'; // Make sure to install jwt-decode package
+import { 
+  Pin, 
+  Edit, 
+  Bell, 
+  MessageCircle, 
+  Briefcase, 
+  HelpCircle, 
+  List,  
+  CloudSun, 
+  CloudMoon, 
+  ChevronRight, 
+  Loader
+} from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
+// ProfileAvatar Component
 const ProfileAvatar = ({ name, imageUrl }) => {
   const getInitials = (fullName) => {
     return fullName
@@ -29,8 +44,9 @@ const ProfileAvatar = ({ name, imageUrl }) => {
   );
 };
 
+// StatCard Component
 const StatCard = ({ label, value, valueClassName = "text-blue-600" }) => (
-  <div className="bg-white p-5 rounded-2xl shadow-md hover:shadow-lg transition group">
+  <div className="bg-white p-5 rounded-2xl shadow-md hover:shadow-lg transition group overflow-hidden">
     <p className="text-xs uppercase tracking-wide text-gray-500 mb-2">{label}</p>
     <div className="flex justify-between items-center">
       <p className={`text-2xl font-black ${valueClassName}`}>{value}</p>
@@ -39,45 +55,85 @@ const StatCard = ({ label, value, valueClassName = "text-blue-600" }) => (
   </div>
 );
 
+// StudentDashboard Main Component
 const StudentDashboard = () => {
+  // State variables
   const [weather, setWeather] = useState({
     description: 'Loading...',
     temperature: '--',
     icon: null,
   });
-
+  const [userData, setUserData] = useState(null);
+  const [jobApplications, setJobApplications] = useState(0);
   const [currentTime, setCurrentTime] = useState('');
-  const navigate=useNavigate();
+  const navigate = useNavigate();
 
+  // Fetch User Data
+  const fetchUserData = async (userId) => {
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_URL_API}/api/student/${userId}`);
+  
+      const data = response.data;
+      setUserData(data);
+
+
+      
+      // Set job applications if available
+      if (data.jobApplications) {
+        setJobApplications(data.jobApplications.length || 0);
+      }
+    } catch (error) {
+      console.error('Failed to fetch user data:', error.response ? error.response.data : error.message);
+    }
+  };
+  
+
+  // Fetch User Data on Component Mount
+  useEffect(() => {
+    const token = localStorage.getItem('Authorization');
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        const userId = decoded.userId;
+        fetchUserData(userId);
+      } catch (error) {
+        console.error('Failed to decode token:', error);
+      }
+    }
+  }, []);
+
+  // Fetch Weather Data
   useEffect(() => {
     const fetchWeather = async () => {
       const url = `https://api.open-meteo.com/v1/forecast?latitude=29.0402&longitude=77.0927&hourly=temperature_2m`;
       try {
-        const response = await fetch(url);
-        const data = await response.json();
+        const response = await axios.get(url);
+        const data = response.data;
         const currentHour = new Date().getHours();
         const isDay = currentHour >= 6 && currentHour < 18;
-        
+    
         const getWeatherDescription = () => {
           if (currentHour >= 5 && currentHour < 12) return 'Good Morning';
           if (currentHour >= 12 && currentHour < 17) return 'Afternoon Breeze';
           if (currentHour >= 17 && currentHour < 20) return 'Evening Glow';
           return 'Starry Night';
         };
-
+    
         setWeather({
           description: getWeatherDescription(),
           temperature: data.hourly.temperature_2m[currentHour],
           icon: isDay ? <CloudSun className="text-amber-500" size={48} /> : <CloudMoon className="text-indigo-500" size={48} />,
         });
       } catch (error) {
-        console.error('Failed to fetch weather:', error);
+        console.error('Failed to fetch weather:', error.response ? error.response.data : error.message);
       }
     };
+    
 
     fetchWeather();
   }, []);
 
+  // Update Current Time
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
@@ -95,12 +151,22 @@ const StudentDashboard = () => {
     return () => clearInterval(intervalId);
   }, []);
 
+  // Loading State
+  if (!userData) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-2xl font-bold text-gray-600 flex items-center gap-3"><Loader className='animate-spin'/> Loading...</p>
+      </div>
+    );
+  }
+
+  // Render Dashboard
   return (
     <div className="min-h-screen bg-gray-50 p-8 mt-20 sm:p-6 font-sans">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Top Section */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Important Links */}
+          {/* Quick Links */}
           <div className="bg-white shadow-lg rounded-2xl p-6 border border-gray-100 hover:shadow-xl transition">
             <div className="flex items-center mb-4">
               <Pin className="text-blue-500 mr-3" size={24} />
@@ -149,7 +215,7 @@ const StudentDashboard = () => {
             </div>
           </div>
 
-          {/* Applied Jobs */}
+          {/* Job Applications Section */}
           <div className="bg-white shadow-lg rounded-2xl p-6 border border-gray-100 hover:shadow-xl transition">
             <h3 className="text-lg font-black text-gray-800 flex items-center mb-5">
               <Briefcase className="mr-3 text-green-500" size={24} />
@@ -158,9 +224,12 @@ const StudentDashboard = () => {
             <div className="space-y-3">
               <div className="bg-gray-100 p-4 rounded-xl flex justify-between items-center">
                 <span className="font-semibold text-gray-700">Total Applications</span>
-                <span className="font-bold text-green-600">5</span>
+                <span className="font-bold text-green-600">{jobApplications}</span>
               </div>
-              <button className="w-full mt-4 bg-gradient-to-r from-green-500 to-blue-500 text-white py-3 rounded-xl hover:opacity-90 transition flex items-center justify-center">
+              <button 
+                onClick={() => navigate('/student/jobs')}
+                className="w-full mt-4 bg-gradient-to-r from-green-500 to-blue-500 text-white py-3 rounded-xl hover:opacity-90 transition flex items-center justify-center"
+              >
                 <List className="mr-2" size={20} />
                 View Applications
               </button>
@@ -179,7 +248,6 @@ const StudentDashboard = () => {
           </div>
           
           <Link to="/student/jobs" className="bg-white text-green-600 px-6 py-3 rounded-xl font-bold hover:bg-gray-100 transition">
-            
             Explore Jobs
           </Link>
         </div>
@@ -222,24 +290,27 @@ const StudentDashboard = () => {
             <div className="w-full md:w-1/4 text-center md:text-left mb-4 md:mb-0 flex flex-col items-center">
               <div className="relative">
                 <ProfileAvatar 
-                  name="John Doe" 
-                  imageUrl={null}
+                  name={userData.name || "User"} 
+                  imageUrl={userData.profilePicture}
                 />
                 <div className="absolute bottom-2 right-2 bg-blue-500 text-white rounded-full p-2 shadow-md hover:bg-blue-600 transition">
-                  <Edit size={20} onClick={()=>navigate('/student/profile')}/>
+                  <Edit size={20} onClick={() => navigate('/student/profile')}/>
                 </div>
               </div>
-              <h3 className="text-2xl font-black text-gray-800 mt-4 tracking-tight">John Doe</h3>
-              <p className="text-sm text-blue-600 font-semibold">Computer Science Engineer</p>
+              <h3 className="text-2xl font-black text-gray-800 mt-4 tracking-tight">{userData.name}</h3>
+              <p className="text-sm text-blue-600 font-semibold">{userData.branch || "Student"}</p>
             </div>
             <div className="w-full md:w-3/4 md:pl-8 relative">
               <div className="grid grid-cols-2 gap-4">
-                <StatCard label="Current Semester GPA" value="8.5" />
-                <StatCard label="Overall CGPA" value="8.2" valueClassName="text-green-600" />
-                <StatCard label="Placement Status" value="Placed" valueClassName="text-green-600" />
-                <StatCard label="Department" value="Computer Science" />
-                <StatCard label="Batch" value="2024" />
-                <StatCard label="Re-appear" value="None" valueClassName="text-red-600" />
+                <StatCard label="Current Semester GPA" value={userData?.semCgpa[userData.semCgpa.length-1] || "N/A"} />
+                {/* <StatCard label="Overall CGPA" value={overCGPA || "N/A"} valueClassName="text-green-600" /> */}
+                <StatCard label="Phone" value={`+91 ${userData.phone}` || "N/A"} />
+                <StatCard label="Batch" value={userData.batchYear || "N/A"} />
+                <StatCard 
+                  label="Re-appear" 
+                  value={userData.activeBacklogs || "None"} 
+                  valueClassName={userData.activeBacklogs>0 ? "text-red-600" : "text-green-600"} 
+                />
               </div>
             </div>
           </div>
