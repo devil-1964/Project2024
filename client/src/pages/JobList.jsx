@@ -3,12 +3,12 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import moment from "moment"
 import { useNavigate } from 'react-router-dom';
-import { Briefcase, MapPin, Trash2, Edit2, CheckCircle, XCircle, Sheet } from 'lucide-react';
+import { Briefcase, MapPin, Trash2, Edit2, CheckCircle, XCircle, Sheet, Loader } from 'lucide-react';
 
 const JobList = ({ userRole, isId }) => {
     const [jobs, setJobs] = useState([]);
-    const [isOpen, setIsOpen] = useState(true)
     const [selectedJobId, setSelectedJobId] = useState(null);
+    const [loading, setLoading] = useState(true)
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const navigate = useNavigate();
     const id = isId
@@ -26,6 +26,7 @@ const JobList = ({ userRole, isId }) => {
             });
             // console.log(response)
             setJobs(response.data);
+            setLoading(false)
         } catch (error) {
             console.error('Error fetching jobs:', error);
             toast.error('Failed to load jobs. Please try again later.');
@@ -62,13 +63,13 @@ const JobList = ({ userRole, isId }) => {
         }
     };
 
-    const handleView=async(jobId)=>{
+    const handleView = async (jobId) => {
         navigate(`/student/jobs/${jobId}`)
     }
 
     const handleApply = async (jobId) => {
-        console.log(jobId);  // Log jobId for debugging
-        console.log(id);     // Log userId for debugging
+        // console.log(jobId);  // Log jobId for debugging
+        // console.log(id);     // Log userId for debugging
 
         try {
             // Send POST request to apply for a job
@@ -85,7 +86,11 @@ const JobList = ({ userRole, isId }) => {
                 setJobs(jobs.map((job) =>
                     job._id === jobId ? { ...job, applied: true } : job  // Mark job as applied
                 ));
-            } else {
+            }
+            else if (response.data.message === 'Student has already applied for this job') {
+                toast.success('Student has already applied for this job')
+            }
+            else {
                 toast.error('Failed to apply for the job. Please try again.');
             }
         } catch (error) {
@@ -141,6 +146,14 @@ const JobList = ({ userRole, isId }) => {
         }
     };
 
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <p className="text-2xl font-bold text-gray-600 flex items-center gap-3"><Loader className='animate-spin' /> Loading...</p>
+            </div>
+        );
+    }
+
     return (
         <div className="container mx-auto px-4 py-8">
             <h2 className="text-3xl font-bold mb-6 text-gray-800">
@@ -152,7 +165,7 @@ const JobList = ({ userRole, isId }) => {
                     <div key={job._id} className="bg-white p-6 rounded-lg shadow-lg transition duration-300 ease-in-out hover:shadow-xl">
                         <div className="flex justify-between items-start mb-4">
                             <h3 className="text-xl font-semibold text-gray-800">{job.jobTitle}</h3>
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${(moment().isBefore(job.lastDateToApply) || moment().isSame(job.lastDateToApply))? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${(moment().isBefore(job.lastDateToApply) || moment().isSame(job.lastDateToApply)) ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                                 {(moment().isBefore(job.lastDateToApply) || moment().isSame(job.lastDateToApply)) ? (
                                     <span className="flex items-center">
                                         <CheckCircle className="w-4 h-4 mr-1" />
@@ -209,12 +222,13 @@ const JobList = ({ userRole, isId }) => {
                                     >
                                         View Job
                                     </button>
-                                    <button
-                                        className="w-full bg-blue-500 text-white px-4 py-2 mt-4 rounded-lg hover:bg-blue-600 transition duration-300 ease-in-out"
-                                        onClick={() => handleApply(job._id)}
-                                    >
-                                        Apply Now
-                                    </button>
+                              
+                                        <button
+                                            className={`bg-blue-500 hover:bg-blue-600 w-full  text-white px-4 py-2 mt-4 rounded-lg  transition duration-300 ease-in-out`}
+                                            onClick={() => handleApply(job._id)}
+                                        >
+                                            Apply Now
+                                        </button>
                                 </div>
                             )
                         )}

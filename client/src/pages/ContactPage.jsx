@@ -47,26 +47,26 @@ const ContactPage = () => {
 
       {/* Bottom Section - Training Placement Coordinators Table */}
       <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 ease-in-out">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Training & Placement Coordinators</h2>
+        <h2 className="text-2xl font-semibold text-gray-800 mb-4 ">Training & Placement Student Coordinators</h2>
         <table className="w-full table-auto border-collapse">
           <thead>
             <tr>
               <th className="text-left p-4 border-b text-lg">S. No.</th>
               <th className="text-left p-4 border-b text-lg">Name</th>
-              <th className="text-left p-4 border-b text-lg">Branch</th>
+              <th className="text-left p-4 border-b text-lg max-sm:hidden">Branch</th>
               <th className="text-left p-4 border-b text-lg">Phone</th>
             </tr>
           </thead>
           <tbody>
-            {[{ name: 'John Doe', branch: 'Computer Science', phone: '0123-4567890' },
-              { name: 'Jane Smith', branch: 'Mechanical Engineering', phone: '0123-9876543' },
-              { name: 'Mark Wilson', branch: 'Electrical Engineering', phone: '0123-1122334' },
-              { name: 'Emily Johnson', branch: 'Civil Engineering', phone: '0123-4455667' },
+            {[{ name: 'Tushar Bhatia', branch: 'Computer Science', phone: '0123-4567890' },
+              { name: 'Anshul Goel', branch: 'Mechanical Engineering', phone: '0123-9876543' },
+              { name: 'Sakshi Yadav', branch: 'Electrical Engineering', phone: '0123-1122334' },
+              { name: 'Aditi', branch: 'Civil Engineering', phone: '0123-4455667' },
             ].map((coordinator, index) => (
               <tr key={index} className="hover:bg-gray-100 transition-all duration-200 ease-in-out">
                 <td className="p-4 border-b">{index + 1}</td>
                 <td className="p-4 border-b">{coordinator.name}</td>
-                <td className="p-4 border-b">{coordinator.branch}</td>
+                <td className="p-4 border-b max-sm:hidden">{coordinator.branch}</td>
                 <td className="p-4 border-b">{coordinator.phone}</td>
               </tr>
             ))}

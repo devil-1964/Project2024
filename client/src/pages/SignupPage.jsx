@@ -35,8 +35,8 @@ const SignupPage = () => {
   };
 
   return (
-    <div className="flex min-h-full items-center justify-center pt-16">
-      <div className="card w-full max-w-sm shadow-2xl bg-base-100">
+    <div className="flex  items-center justify-center pt-8 ">
+      <div className="card w-full max-w-sm shadow-2xl  bg-base-100">
         <div className="card-body">
           <h2 className="text-center text-2xl font-bold">Sign Up</h2>
           <form onSubmit={handleSubmit}>
@@ -84,7 +84,7 @@ const SignupPage = () => {
                 </a>
               </label>
             </div>
-            <div className="form-control mt-6">
+            <div className="form-control mt-2">
               <button type="submit" className="btn bg-blue-900 text-white">
                 Signup
               </button>

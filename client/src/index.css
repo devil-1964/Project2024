@@ -16,12 +16,6 @@
   }
 
   * {
-    /* Webkit browsers (Chrome, Safari, Edge) */
-    &::-webkit-scrollbar {
-      display: none;  /* Hides the scrollbar icon */
-    }
-  
-    /* Firefox */
     scrollbar-width: none;  /* Hides the scrollbar */
     scrollbar-color: transparent transparent;  /* Makes the thumb transparent */
   }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
-import { BarChart, Home, LayoutDashboard, LogOut, Menu, Phone, User, Users, X } from 'lucide-react'; // Lucide icon for hamburger menu
+import { BarChart, Home, HomeIcon, LayoutDashboard, LogOut, Menu, Phone, User, Users, X } from 'lucide-react'; // Lucide icon for hamburger menu
 import logo from "../assets/dcrustLogo.png";
 import dp from "../assets/profile.png";
 import toast from 'react-hot-toast';
@@ -56,19 +56,20 @@ const RootLayout = () => {
     };
 
     return (
-        <>
-            <header className="fixed top-0 left-0 w-full z-10 bg-blue-950 p-4">
+        <div className='flex flex-col min-h-screen relative'>
+            <header className="fixed top-0 left-0 w-full z-10 bg-blue-950 p-4 ">
                 <div className="flex justify-between items-center">
                     {/* Logo */}
                     <Link to='/'>
-                    <div className="flex items-center hover:scale-110 transition-transform ease-in gap-2">
-                        <img src={logo} alt="logo" className="w-12 border-1 border-black" />
-                    </div>
+                        <div className="flex items-center hover:scale-110 transition-transform ease-in gap-2">
+                            <img src={logo} alt="logo" className="w-12 border-1 border-black" />
+                        </div>
                     </Link>
-                    
+
 
                     {/* Desktop Navbar Links */}
                     <div className="hidden lg:flex gap-4 items-center">
+                        <a href="/" className="text-white font-semibold hover:scale-110 transition-transform ease-in hover:text-yellow-400 flex gap-1"><HomeIcon />Home</a>
                         <a href="/team" className="text-white font-semibold hover:scale-110 transition-transform ease-in hover:text-yellow-400 flex gap-1"><Users />Our Team</a>
                         <a href="/contact-us" className="text-white hover:scale-110 transition-transform ease-in hover:text-yellow-400 font-semibold flex gap-1"><Phone />Contact Us</a>
                         <a href="/placement-statistics" className="text-white hover:scale-110 transition-transform ease-in hover:text-yellow-400 font-semibold flex gap-1"><BarChart />Placement Statistics</a>
@@ -108,10 +109,10 @@ const RootLayout = () => {
                     <a href="/placement-statistics" className="text-white py-2 hover:scale-105 transition-transform ease-in hover:text-yellow-400 font-semibold flex gap-1"><BarChart />Placement Statistics</a>
 
                     {isAuthenticated && (
-                       <>
-                       <button onClick={() => { isRole == 'student' ? navigate('/student/dashboard') : navigate('/admin/jobs') }} className="text-white py-2 hover:scale-105 transition-transform ease-in hover:text-yellow-400 font-semibold flex gap-1"><LayoutDashboard />Dashboard</button>
-                       <button onClick={() => handleLogout()} className="text-white py-2 hover:scale-105 transition-transform ease-in hover:text-yellow-400 font-semibold flex gap-1"><LogOut />Logout</button>
-                   </>
+                        <>
+                            <button onClick={() => { isRole == 'student' ? navigate('/student/dashboard') : navigate('/admin/jobs') }} className="text-white py-2 hover:scale-105 transition-transform ease-in hover:text-yellow-400 font-semibold flex gap-1"><LayoutDashboard />Dashboard</button>
+                            <button onClick={() => handleLogout()} className="text-white py-2 hover:scale-105 transition-transform ease-in hover:text-yellow-400 font-semibold flex gap-1"><LogOut />Logout</button>
+                        </>
                     )}
 
                     {!isAuthenticated && (
@@ -124,22 +125,17 @@ const RootLayout = () => {
             </div>
 
             {/* Main Content */}
-            <main className={`lg:pl-0 ${isMobileMenuOpen ? 'lg:pl-64' : ''} mt-16`}>
+            <main className={`lg:pl-0 ${isMobileMenuOpen ? 'lg:pl-64' : ''} my-16`}>
                 <Outlet />
             </main>
 
             {/* Footer */}
-            <footer className="bg-blue-950 text-white py-6 mt-8">
+            <footer className="bg-blue-950 text-white py-2 absolute bottom-0 w-full ">
                 <div className="max-w-7xl mx-auto text-center">
                     <p className="text-sm">© {new Date().getFullYear()} DCRUST. All rights reserved.</p>
-                    <div className="mt-4 space-x-6">
-                        <a href="/privacy-policy" className="text-white hover:text-yellow-400">Privacy Policy</a>
-                        <a href="/terms-of-service" className="text-white hover:text-yellow-400">Terms of Service</a>
-                        <a href="/contact-us" className="text-white hover:text-yellow-400">Contact Us</a>
-                    </div>
                 </div>
             </footer>
-        </>
+        </div>
     );
 };
 

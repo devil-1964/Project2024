@@ -6,6 +6,7 @@ const authRoutes = require("./routes/authRoutes");
 const jobRoutes = require("./routes/jobRoutes"); 
 const adminRoutes=require("./routes/adminRoutes")
 const studentRoutes=require("./routes/studentRoutes")
+const placementRoutes=require("./routes/placementRoutes")
 const app=express();
 
 app.use(cors({
@@ -20,6 +21,7 @@ app.use("/api/auth",authRoutes);
 app.use("/api/jobs", jobRoutes);
 app.use("/api/admin",adminRoutes)
 app.use("/api/student",studentRoutes)
+app.use("/api",placementRoutes)
 
 app.listen(port,()=>{
     console.log(`I am a express project running on ${port}`)

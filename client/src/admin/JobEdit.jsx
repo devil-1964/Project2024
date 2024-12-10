@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import moment from 'moment'
 import { Briefcase, MapPin, Building, CheckCircle, X, Save } from 'lucide-react';
 
 const JobEdit = () => {
@@ -42,6 +43,38 @@ const JobEdit = () => {
     }));
   };
 
+  const checkDate=(date)=>{
+  return (moment().isBefore(date) || moment().isSame(date)) 
+  }
+
+  const handleDateChange=(e)=>{
+    const {name,value}=e.target;
+    // console.log(value)
+    if(!value)
+    {
+      const today = moment();
+      const oneDayBefore = today.subtract(1, 'days');
+      setJob((prev)=>(
+        {
+          ...prev,
+          [name]:oneDayBefore,
+        }
+      ));
+     
+    }
+    else
+    {
+      const today = moment();
+      const oneDayAfter = today.add(1, 'days');
+      setJob((prev)=>(
+        {
+          ...prev,
+          [name]:oneDayAfter,
+        }
+      ))
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const payload = {
@@ -49,7 +82,7 @@ const JobEdit = () => {
       jobDescription: job.jobDescription,
       location: job.location,
       company: job.company,
-      isOpen: job.isOpen,
+      lastDateToApply: job.lastDateToApply,
     };
 
     try {
@@ -166,13 +199,13 @@ const JobEdit = () => {
           <div className="flex items-center space-x-2">
             <input
               type="checkbox"
-              id="isOpen"
-              name="isOpen"
-              checked={job.isOpen || false}
-              onChange={(e) => handleChange({ target: { name: 'isOpen', value: e.target.checked } })}
+              id="lastDateToApply"
+              name="lastDateToApply"
+              checked={checkDate(job.lastDateToApply)}
+              onChange={(e) => handleDateChange({ target: { name: 'lastDateToApply', value: e.target.checked } })}
               className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-950"
             />
-            <label htmlFor="isOpen" className="flex items-center text-sm font-medium text-gray-700">
+            <label htmlFor="lastDateToApply" className="flex items-center text-sm font-medium text-gray-700">
               <CheckCircle className="w-5 h-5 mr-2 text-blue-950" />
               Is the job open for applications?
             </label>

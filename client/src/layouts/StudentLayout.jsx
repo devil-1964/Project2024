@@ -34,12 +34,13 @@ const StudentLayout = () => {
 
                         {isAuthenticated && (
                             <>
-                                <Link to="/student/jobs" className="text-white hover:scale-110 transition-transform ease-in font-semibold hover:text-yellow-400 flex gap-1">
-                                    <Plus /> Apply Jobs
-                                </Link>
                                 <Link to="/student/dashboard" className="text-white font-semibold hover:scale-110 transition-transform ease-in hover:text-yellow-400 flex gap-1">
                                     <LayoutDashboard />Student Dashboard
                                 </Link>
+                                <Link to="/student/jobs" className="text-white hover:scale-110 transition-transform ease-in font-semibold hover:text-yellow-400 flex gap-1">
+                                    <Plus /> Apply Jobs
+                                </Link>
+                                
                                 <Link to="/student/profile" className="text-white hover:scale-110 transition-transform ease-in hover:text-yellow-400 font-semibold flex gap-1"><User />Edit Profile</Link>
                                 <button onClick={() => handleLogout()} className="text-white hover:scale-110 transition-transform ease-in hover:text-yellow-400 font-semibold flex gap-1"><LogOut />Logout</button>
                             </>

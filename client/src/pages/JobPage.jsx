@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { jwtDecode } from 'jwt-decode'; // Corrected import
 import JobList from './JobList'; // Job list to show available jobs for students
 
@@ -31,7 +31,7 @@ const JobPage = () => {
     }, []);
 
     return (
-        <div className="p-6">
+        <div >
             {/* Render the job list for students, pass userRole to JobList */}
             <JobList userRole={userRole} isId={isId}/>
         </div>

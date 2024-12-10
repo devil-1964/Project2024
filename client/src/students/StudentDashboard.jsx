@@ -79,8 +79,8 @@ const StudentDashboard = () => {
 
       
       // Set job applications if available
-      if (data.jobApplications) {
-        setJobApplications(data.jobApplications.length || 0);
+      if (data.jobApplied) {
+        setJobApplications(data.jobApplied.length || 0);
       }
     } catch (error) {
       console.error('Failed to fetch user data:', error.response ? error.response.data : error.message);
@@ -227,7 +227,7 @@ const StudentDashboard = () => {
                 <span className="font-bold text-green-600">{jobApplications}</span>
               </div>
               <button 
-                onClick={() => navigate('/student/jobs')}
+                onClick={() => navigate('/student/applied/jobs')}
                 className="w-full mt-4 bg-gradient-to-r from-green-500 to-blue-500 text-white py-3 rounded-xl hover:opacity-90 transition flex items-center justify-center"
               >
                 <List className="mr-2" size={20} />
