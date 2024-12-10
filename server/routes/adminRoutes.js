@@ -5,7 +5,7 @@ const { protect } = require("../middleware/authMiddleware");
 const router = express.Router();
 
 // Route to create a new admin
-router.get("/", getAllAdmins);
+router.get("/",protect, getAllAdmins);
 
 router.post("/create",protect, createAdmin);
 

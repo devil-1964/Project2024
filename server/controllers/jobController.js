@@ -32,7 +32,7 @@ const applyForJob = async (req, res) => {
       await student.save();
     } else {
       return res
-        .status(400)
+        .status(200)
         .json({ message: "Student has already applied for this job" });
     }
 

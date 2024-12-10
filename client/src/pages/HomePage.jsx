@@ -1,5 +1,6 @@
 import React from 'react';
 import { FileText, Download } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const TrainingAndPlacementPage = () => {
   return (
@@ -56,8 +57,8 @@ const TrainingAndPlacementPage = () => {
         <p className="text-lg mb-4 border-b pb-4">
           The placement season runs through the year, starting from the first week of August to March.
         </p>
-        <p className="text-lg mb-0">
-          <a href="/placement-brochure" className="text-blue-950 underline flex items-center">
+        <p className="text-lg mb-0 cursor-pointer" onClick={()=>{toast.error("Resource Not Available")}}>
+          <a  className="text-blue-950 underline flex items-center">
             Placement Brochure <Download className="ml-2 w-5 h-5" />
           </a>
         </p>
@@ -66,9 +67,9 @@ const TrainingAndPlacementPage = () => {
       {/* Institute Placement Policy */}
       <h2 className="text-2xl font-semibold text-blue-950">Institute Placement Policy</h2>
       <div className="bg-white p-6 rounded-md shadow-md">
-        <p className="text-lg mb-0">
+        <p className="text-lg mb-0 cursor-pointer"onClick={()=>{toast.error("Resource Not Available")}}>
           Click the PDF icon to view the placement policy.
-          <a href="/placement-policy" className="text-blue-950 underline flex items-center">
+          <a  className="text-blue-950 underline flex items-center">
             <FileText className="mr-2 w-5 h-5" />
             View Placement Policy
           </a>
@@ -89,35 +90,7 @@ const TrainingAndPlacementPage = () => {
         </p>
       </div>
 
-      {/* Notices */}
-      <h2 className="text-2xl font-semibold text-blue-950">Notices</h2>
-      <div className="bg-white p-6 rounded-md shadow-md">
-      <table className="w-full table-auto border-collapse">
-  <thead>
-    <tr>
-      <th className="text-left p-2 border-b">S. No.</th>
-      <th className="text-left p-2  border-b">Session</th>
-      <th className="text-left p-2 max-sm:hidden border-b">Date</th>
-      <th className="text-left p-2 border-b">Notice</th>
-    </tr>
-  </thead>
-  <tbody>
-    {[2024, 2023, 2022].map((year, index) => (
-      <tr key={index}>
-        <td className="p-2 border">{index + 1}</td>
-        <td className="p-2  border">{`${year}-${year + 1}`}</td>
-        <td className="p-2 max-sm:hidden border">{`${year}-${year + 1}`}</td>
-        <td className="p-2 border">
-          <a href={`/notices/session-${year}-${year + 1}`} className="text-blue-950 underline flex items-center">
-            View Notice <Download className="ml-2 w-5 h-5" />
-          </a>
-        </td>
-      </tr>
-    ))}
-  </tbody>
-</table>
 
-      </div>
     </div>
   );
 };

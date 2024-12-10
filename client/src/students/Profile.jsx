@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
-import { Edit, Save, X, Linkedin, Github, FileText, Phone, Mail } from "lucide-react";
+import { Edit, Save, X, Linkedin, Github, FileText, Phone, Mail, Loader } from "lucide-react";
+import toast from "react-hot-toast"
 import { jwtDecode } from 'jwt-decode'; // Corrected import
 
 
 // Component for displaying the avatar
 const ProfileAvatar = ({ name, imageUrl }) => (
-  <div className="w-32 h-32 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 text-4xl font-bold">
+  <div className="w-48 h-48 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 text-7xl font-bold">
     {imageUrl ? (
       <img src={imageUrl} alt={name} className="w-full h-full object-cover rounded-full" />
     ) : (
@@ -25,6 +26,8 @@ const StatCard = ({ label, value, valueClassName = "text-gray-800" }) => (
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [avgCgpa, setAvgCgpa] = useState(null);
   const [temp, setTemp] = useState(null)
   const [profile, setProfile] = useState({
     name: "",
@@ -39,14 +42,32 @@ const Profile = () => {
     activeBacklogs: 0,
   });
 
+  const handleAvgCgpa=(data)=>{
+    const avg = data.reduce(
+      (acc, cgpa) => {
+        if (cgpa !== null) {
+          acc.sum += Number(cgpa); // Add to the sum if not null
+          acc.count++;     // Increment the count of valid numbers
+        }
+        return acc;
+      },
+      { sum: 0, count: 0 } // Initial value: an object to track the sum and count
+    );
+    
+    // Calculate the average if there are valid numbers
+    const average = avg.count > 0 ? avg.sum / avg.count : 0;
+    return average;
+  }
+
   const fetchProfile = async (userId) => {
     try {
       const response = await axios.get(`${import.meta.env.VITE_URL_API}/api/student/${userId}`);
 
       const data = response.data;
       setProfile(data);
+      setAvgCgpa(handleAvgCgpa(data.semCgpa))
       setTemp(userId)
-
+      setLoading(false)
     } catch (error) {
       console.error('Failed to fetch user data:', error.response ? error.response.data : error.message);
     }
@@ -69,14 +90,17 @@ const Profile = () => {
   // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setProfile((prev) => ({ ...prev, [name]: value }));
+    const newValue = e.target.type === "number" ? parseFloat(value) || "" : value;
+    setProfile((prev) => ({ ...prev, [name]: newValue }));
   };
 
   // Handle semester GPA changes
   const handleSemesterGPAChange = (index, value) => {
-    const newSemCgpa = [...profile.semCgpa];
-    newSemCgpa[index] = parseFloat(value);
+    const newSemCgpa = [...profile.semCgpa].filter(cgpa => cgpa !== null && !isNaN(cgpa));
+    // console.log(newSemCgpa)
+    newSemCgpa[index] = value === "number" ? parseFloat(value) || "" : value;
     setProfile((prev) => ({ ...prev, semCgpa: newSemCgpa }));
+
   };
 
   // Submit the profile updates
@@ -84,19 +108,31 @@ const Profile = () => {
     e.preventDefault();
     try {
       const response = await axios.put(`${import.meta.env.VITE_URL_API}/api/student/update/${temp}`, profile);
-      console.log("Profile updated successfully:", response.data);
+      // console.log("Profile updated successfully:", response.data);
+      toast.success("Profile updated successfully");
       setIsEditing(false);
     } catch (error) {
       console.error("Error updating profile:", error);
     }
+    console.log(profile.semCgpa)
+    setAvgCgpa(handleAvgCgpa(profile.semCgpa))
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-2xl font-bold text-gray-600 flex items-center gap-3"><Loader className='animate-spin' /> Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="bg-gradient-to-br from-blue-50 to-white shadow-lg rounded-2xl p-6 border border-gray-100">
+      <h1 className=" text-4xl font-bold w-full p-8">Student Profile</h1>
+      <div className="bg-gradient-to-br from-blue-50 to-white shadow-lg rounded-2xl p-6 border border-gray-100 ">
         <div className="flex flex-col md:flex-row">
           {/* Left section - Profile Avatar and Info */}
-          <div className="w-full md:w-1/4 text-center md:text-left mb-4 md:mb-0 flex flex-col items-center">
+          <div className="w-full md:w-1/3 text-center md:text-left mb-2 md:mb-0 flex flex-col items-center">
             <div className="relative">
               <ProfileAvatar name={profile.name} imageUrl={null} />
               {!isEditing && (
@@ -108,8 +144,8 @@ const Profile = () => {
                 </button>
               )}
             </div>
-            <h3 className="text-2xl font-black text-gray-800 mt-4 tracking-tight">{profile.name}</h3>
-            <p className="text-sm text-blue-600 font-semibold">{`${profile.branch}, Batch of ${profile.batchYear}`}</p>
+            <h3 className="text-3xl font-black text-gray-800 mt-4 tracking-tight">{profile.name}</h3>
+            <p className="text-md text-blue-600 font-semibold">{`${profile.branch}, Batch of ${profile.batchYear}`}</p>
           </div>
 
           {/* Right section - Profile Details */}
@@ -181,18 +217,19 @@ const Profile = () => {
                 <div>
                   <p className="font-semibold mb-2">Semester GPAs:</p>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                    {profile.semCgpa.map((gpa, index) => (
-                      <input
-                        key={index}
-                        value={gpa}
-                        onChange={(e) => handleSemesterGPAChange(index, e.target.value)}
-                        className="w-full p-2 border rounded"
-                        placeholder={`Semester ${index + 1} GPA`}
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        max="10"
-                      />
+                    {[...Array(6)].map((_, index) => (
+                      <div key={index} className="w-full p-2">
+                        <input
+                          value={profile.semCgpa[index] ?? ''} // Use value from profile.semCgpa or an empty string
+                          onChange={(e) => handleSemesterGPAChange(index, e.target.value)}
+                          className="w-full p-2 border rounded"
+                          placeholder={`Semester ${index + 1} GPA`}
+                          type="number"
+                          step='any'
+                          min='0'
+                          max='10'
+                        />
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -234,7 +271,7 @@ const Profile = () => {
               <div className="space-y-4">
                 {/* Displaying Profile Stats */}
                 <div className="grid grid-cols-2 gap-4">
-                  <StatCard label="Last Semester GPA" value={profile.semCgpa[profile.semCgpa.length - 1]} />
+                  <StatCard label="Percentage %" value={`${(avgCgpa*9.5)?.toFixed(2)} %`} />
                   <StatCard label="Batch Year" value={profile.batchYear} />
                   {profile.activeBacklogs > 0 && (
                     <StatCard label="Active Backlogs" value={profile.activeBacklogs} valueClassName="text-red-600" />
@@ -242,31 +279,31 @@ const Profile = () => {
                 </div>
 
                 {/* Displaying Profile Links */}
-                <div className="space-y-2 flex flex-col">
-                  <div className="flex flex-wrap gap-1 justify-between">
-                    <p className="flex items-center text-gray-600">
+                <div className="space-y-4 flex flex-col">
+                  <div className="flex flex-wrap  gap-3 justify-between">
+                    <p className="flex items-center text-gray-600 hover:bg-blue-600 p-2 hover:shadow-md hover:text-white rounded-full">
                       <Phone size={20} className="mr-2" />
                       {profile.phone}
                     </p>
-                    <p className="flex items-center text-gray-600">
+                    <p className="flex items-center text-gray-600  hover:bg-blue-600 p-2 hover:shadow-md hover:text-white rounded-full">
                       <Mail size={20} className="mr-2" />
                       {profile.email}
                     </p>
-                    <p className="flex items-center text-gray-600">
+                    <p className="flex items-center text-gray-600  hover:bg-blue-600 p-2 hover:shadow-md hover:text-white rounded-full hover:underline">
                       <Linkedin size={20} className="mr-2" />
-                      <a href={profile.linkedinURL} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                      <a href={profile.linkedinURL} target="_blank" rel="noopener noreferrer" className="  ">
                         LinkedIn Profile
                       </a>
                     </p>
-                    <p className="flex items-center text-gray-600">
+                    <p className="flex items-center text-gray-600  hover:bg-blue-600 p-2 hover:shadow-md hover:text-white rounded-full hover:underline">
                       <Github size={20} className="mr-2" />
-                      <a href={profile.githubURL} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                      <a href={profile.githubURL} target="_blank" rel="noopener noreferrer" className=" ">
                         GitHub Profile
                       </a>
                     </p>
-                    <p className="flex items-center text-gray-600">
+                    <p className="flex items-center text-gray-600  hover:bg-blue-600 p-2 hover:shadow-md hover:text-white rounded-full hover:underline">
                       <FileText size={20} className="mr-2" />
-                      <a href={profile.resumeURL} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                      <a href={profile.resumeURL} target="_blank" rel="noopener noreferrer" className="">
                         Resume
                       </a>
                     </p>
@@ -284,13 +321,14 @@ const Profile = () => {
                       //   min="0"
                       //   max="10"
                       // />
-                      <>
-                        <div className="flex flex-col">
-                          <div className="font-semibold" key={index}>{`Semester ${index + 1}`}</div>
-                          <div >{gpa}</div>
-                        </div>
+                      gpa && !isNaN(gpa) && (
 
-                      </>
+                        <div key={index} className="flex flex-col bg-white items-center rounded-lg shadow-sm py-2">
+                          <div className="font-semibold" >{`Semester ${index + 1}`}</div>
+                          <div >{gpa}</div>
+                        </div>)
+
+
 
                     ))}
                   </div>

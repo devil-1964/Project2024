@@ -22,6 +22,8 @@ import { Toaster } from 'react-hot-toast';
 import JobEdit from './admin/JobEdit';
 import Profile from './students/Profile';
 import StudentDetailsForm from './students/StudentDetailsForm';
+import AppliedJobs from './students/AppliedJobs';
+import PlacementReport from './pages/PlacementReport';
 
 const router = createBrowserRouter([
   {
@@ -31,6 +33,10 @@ const router = createBrowserRouter([
       {
         path: '/',
         element: <HomePage />,
+      },
+      {
+        path: '/placement-year/:yrs',
+        element: <PlacementReport />,
       },
       {
         path: '/team',
@@ -95,6 +101,10 @@ const router = createBrowserRouter([
       {
         path: 'apply/:id',  // This is now relative to '/admin'
         element: <JobApplicationForm />,
+      },
+      {
+        path: 'applied/jobs',  // This is now relative to '/admin'
+        element: <AppliedJobs />,
       },
       {
         path: 'dashboard',
