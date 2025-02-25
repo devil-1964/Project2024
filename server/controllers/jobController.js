@@ -1,4 +1,4 @@
-const JobApplication = require("../models/jobApplication");
+const JobApplication = require("../models/JobApplication");
 const StudentDetails = require("../models/StudentDetails");
 const AdminDetails = require("../models/AdminDetails");
 const exportJobApplicants = require("../utils/excelExporter");
