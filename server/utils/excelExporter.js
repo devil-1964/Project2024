@@ -1,5 +1,5 @@
 const StudentDetails = require("../models/StudentDetails");
-const JobApplication = require("../models/jobApplication");
+const JobApplication = require("../models/JobApplication");
 const ExcelJS = require("exceljs");
 
 /**
