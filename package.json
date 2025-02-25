@@ -6,8 +6,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "concurrently \"npm run  client\" \"npm run server\" ",
+    "build": "concurrently \"npm run  clientbuild\" \"npm run serverbuild\" ",
     "client":"cd client && npm run dev",
-    "server":"cd server && npm start"
+    "clientbuild":"cd client && npm install",
+    "server":"cd server && npm start",
+    "serverbuild":"cd server && npm install"
   },
   "keywords": [],
   "author": "",
