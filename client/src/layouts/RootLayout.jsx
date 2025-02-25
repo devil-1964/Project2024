@@ -28,7 +28,7 @@ const RootLayout = () => {
                 } else {
                     // Token is valid
                     setIsRole(decodedToken.role)
-                    console.log(isRole)
+                    // console.log(isRole)
                     setIsAuthenticated(true);
                 }
             } catch (error) {
@@ -133,6 +133,7 @@ const RootLayout = () => {
             <footer className="bg-blue-950 text-white py-2 absolute bottom-0 w-full ">
                 <div className="max-w-7xl mx-auto text-center">
                     <p className="text-sm">© {new Date().getFullYear()} DCRUST. All rights reserved.</p>
+                    <p className="text-sm"><span className='font-semibold'>Note:</span> This is not actual website or officially related to DCRUST.</p>
                 </div>
             </footer>
         </div>

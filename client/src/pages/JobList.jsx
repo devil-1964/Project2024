@@ -189,8 +189,8 @@ const JobList = ({ userRole, isId }) => {
                             <span>{job.location}</span>
                         </div>
 
-                        {isAdmin ? (
-                            <div className="flex gap-4 mt-4">
+                        {isAdmin ? (<>
+                            <div className="flex  gap-4 mt-4">
                                 <button
                                     onClick={() => openDeleteModal(job._id)}
                                     className="flex items-center justify-center w-full bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition duration-300 ease-in-out"
@@ -213,6 +213,7 @@ const JobList = ({ userRole, isId }) => {
                                     Export
                                 </button>
                             </div>
+                        </>
                         ) : (
                             (moment().isBefore(job.lastDateToApply) || moment().isSame(job.lastDateToApply)) && (
                                 <div className='flex gap-2'>
@@ -222,13 +223,13 @@ const JobList = ({ userRole, isId }) => {
                                     >
                                         View Job
                                     </button>
-                              
-                                        <button
-                                            className={`bg-blue-500 hover:bg-blue-600 w-full  text-white px-4 py-2 mt-4 rounded-lg  transition duration-300 ease-in-out`}
-                                            onClick={() => handleApply(job._id)}
-                                        >
-                                            Apply Now
-                                        </button>
+
+                                    <button
+                                        className={`bg-blue-500 hover:bg-blue-600 w-full  text-white px-4 py-2 mt-4 rounded-lg  transition duration-300 ease-in-out`}
+                                        onClick={() => handleApply(job._id)}
+                                    >
+                                        Apply Now
+                                    </button>
                                 </div>
                             )
                         )}
