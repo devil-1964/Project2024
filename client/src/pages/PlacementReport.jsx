@@ -79,7 +79,7 @@ const PlacementReport = () => {
                 label: 'Average Package',
                 data: branches.map((branch) => branch.averagePackageLPA),
                 backgroundColor: [
-                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#F7464A', '#8E44AD', '#2ECC71',
+                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#F7464A', '#8E44AD', '#2ECC71','blue',
                 ],
                 hoverOffset: 4,
             },
@@ -97,7 +97,7 @@ const PlacementReport = () => {
                     ((overallStats.eligibleStudents - overallStats.totalPlacement) * 100) /
                         overallStats.eligibleStudents,
                 ],
-                backgroundColor: ['#8E44AD', '#2ECC71'],
+                backgroundColor: ['orange', 'blue'],
                 hoverOffset: 4,
             },
         ],

@@ -256,7 +256,7 @@ const StudentDashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Complaint and Support */}
           <div className="bg-white shadow-lg rounded-2xl p-6 border border-gray-100 hover:shadow-xl transition">
-            <h3 className="text-lg font-black text-gray-800 flex items-center mb-4">
+            <h3 className="text-lg font-black text-black-500 flex items-center mb-4">
               <MessageCircle className="mr-3 text-red-500" size={24} />
               Complaint & Support
             </h3>
