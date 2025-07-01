@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import moment from "moment"
@@ -73,9 +74,14 @@ const JobList = ({ userRole, isId }) => {
 
         try {
             // Send POST request to apply for a job
+            const token = localStorage.getItem('Authorization');
             const response = await axios.post(`${import.meta.env.VITE_URL_API}/api/jobs/apply`, {
                 userId: id,    // The ID of the user applying
                 jobId: jobId   // The ID of the job being applied for
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
             });
 
             // Assuming the API sends a success message or status
@@ -262,6 +268,11 @@ const JobList = ({ userRole, isId }) => {
             )}
         </div>
     );
+};
+
+JobList.propTypes = {
+    userRole: PropTypes.string.isRequired,
+    isId: PropTypes.string.isRequired
 };
 
 export default JobList;

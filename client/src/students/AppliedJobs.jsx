@@ -8,12 +8,15 @@ const AppliedJobs = () => {
     const [loading, setLoading] = useState(true);
     const fetchUserData = async (userId) => {
         try {
-            const response = await axios.get(`${import.meta.env.VITE_URL_API}/api/student/${userId}`);
+            const token = localStorage.getItem('Authorization');
+            const response = await axios.get(`${import.meta.env.VITE_URL_API}/api/student/${userId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
 
             const data = response.data;
             // setUserData(data);
-
-
 
             // Set job applications if available
             if (data.jobApplied) {

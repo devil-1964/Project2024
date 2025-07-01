@@ -1,6 +1,6 @@
-import  { useState } from 'react';
+import { useState } from 'react';
 import { Link, Outlet, useNavigate } from 'react-router-dom';  // Use Link from react-router-dom
-import { Home, LayoutDashboard, LogOut, Menu, Plus,  X } from 'lucide-react'; // Removed BarChart and Phone icons
+import {  LayoutDashboard, LogOut, Menu, Plus, X } from 'lucide-react'; // Removed BarChart and Phone icons
 import logo from "../assets/dcrustLogo.png";
 import toast from 'react-hot-toast';
 
@@ -23,9 +23,9 @@ const AdminLayout = () => {
                 <div className="flex justify-between items-center">
                     {/* Logo */}
                     <Link to='/'>
-                    <div className="flex items-center gap-2 hover:scale-110 transition-transform ease-in">
-                        <img src={logo} alt="logo" className="w-12 border-1 border-black" />
-                    </div>
+                        <div className="flex items-center gap-2 hover:scale-110 transition-transform ease-in">
+                            <img src={logo} alt="logo" className="w-12 border-1 border-black" />
+                        </div>
                     </Link>
 
                     {/* Desktop Navbar Links */}

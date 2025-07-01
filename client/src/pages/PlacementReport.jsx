@@ -22,7 +22,7 @@ const PlacementReport = () => {
                 // console.log(response.data.branches); 
                 // Check the structure of the response in the console
                 setLoading(false);
-            } catch (err) {
+            } catch {
                 toast.error('Failed to fetch data');
                 setLoading(false);
             }
@@ -42,6 +42,32 @@ const PlacementReport = () => {
     // Assuming the response data has a structure like this:
     // placementReports = [{ year: "2024", branches: [ ...branchData ] }]
     const branches = placementReports || []; // Get branches from the first report (if available)
+
+    // If no data found for this year
+    if (!branches || branches.length === 0) {
+        return (
+            <div className="p-8 max-w-7xl mx-auto flex flex-col items-center text-center">
+                <h2 className="text-4xl font-semibold text-gray-800 mb-8">Placement Report {yrs}-{Number(yrs)+1}</h2>
+                
+                <div className="flex flex-col items-center justify-center py-16">
+                    <div className="bg-white rounded-lg shadow-md p-12 max-w-md w-full">
+                        <div className="text-gray-400 mb-4">
+                            <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                        </div>
+                        <h3 className="text-xl font-semibold text-gray-700 mb-2">No Data Available</h3>
+                        <p className="text-gray-500 text-sm mb-4">
+                            Placement data for {yrs}-{Number(yrs)+1} is currently being compiled. Please check back soon for detailed placement statistics and reports.
+                        </p>
+                        <div className="text-xs text-gray-400">
+                            Data updating soon...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     // Calculate average package for all branches
     const overallStats = branches.reduce(

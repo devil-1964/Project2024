@@ -10,8 +10,9 @@ const JobPage = () => {
         try {
             // Decode the token
             const decoded = jwtDecode(token);
-            setUserRole(decoded.role)
-            setIsID(decoded.userId)
+            setUserRole(decoded.role);
+            setIsID(decoded.userId);
+            return decoded;
         } catch (error) {
             console.error('Error decoding token', error);
             return null;
@@ -22,11 +23,7 @@ const JobPage = () => {
     useEffect(() => {
         const token = localStorage.getItem('Authorization');
         if (token) {
-            const decoded = decodeToken(token);
-            if (decoded) {
-                // Set user role based on the decoded token
-                setUserRole(decoded.role);
-            }
+            decodeToken(token);
         }
     }, []);
 

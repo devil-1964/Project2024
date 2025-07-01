@@ -21,8 +21,14 @@ exports.protect = async (req, res, next) => {
     // Attach user to the request
     req.user = await User.findById(decoded.userId).select("-password");
 
+    // Check if user still exists
+    if (!req.user) {
+      return res.status(401).json({ message: "User no longer exists" });
+    }
+
     next();
   } catch (error) {
+    console.error("Auth middleware error:", error);
     res.status(401).json({ message: "Not authorized, token failed" });
   }
 };
@@ -30,9 +36,16 @@ exports.protect = async (req, res, next) => {
 // Middleware for role-based access
 exports.authorize = (roles) => {
   return (req, res, next) => {
+    // Check if user exists (should be set by protect middleware)
+    if (!req.user) {
+      return res.status(401).json({ message: "User not authenticated" });
+    }
+
+    // Check if user has required role
     if (!roles.includes(req.user.role)) {
       return res.status(403).json({ message: "Forbidden, insufficient permissions" });
     }
+    
     next();
   };
 };
