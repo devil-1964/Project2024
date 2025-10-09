@@ -17,10 +17,31 @@ connectDB();
 // CORS configuration
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL,
+    origin: function (origin, callback) {
+      // Allow requests with no origin (mobile apps, Postman, etc.)
+      if (!origin) return callback(null, true);
+      
+      // Define allowed origins
+      const allowedOrigins = [
+        'http://localhost:5173',           // Local development
+        'http://localhost:3000',           // Alternative local
+        process.env.FRONTEND_URL,          // Production frontend from env
+        // Add your actual Vercel URL here if different from env variable
+      ].filter(Boolean); // Remove any undefined values
+      
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.log(`❌ CORS blocked origin: ${origin}`);
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   })
 );
+
 
 // Body parser middleware
 app.use(express.json({ limit: "10mb" }));
