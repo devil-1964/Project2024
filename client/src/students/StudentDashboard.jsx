@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { jwtDecode } from 'jwt-decode'; // Make sure to install jwt-decode package
 import { 
   Pin, 
@@ -17,6 +17,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 // ProfileAvatar Component
+// eslint-disable-next-line react/prop-types
 const ProfileAvatar = ({ name, imageUrl }) => {
   const getInitials = (fullName) => {
     return fullName
@@ -45,6 +46,7 @@ const ProfileAvatar = ({ name, imageUrl }) => {
 };
 
 // StatCard Component
+// eslint-disable-next-line react/prop-types
 const StatCard = ({ label, value, valueClassName = "text-blue-600" }) => (
   <div className="bg-white p-5 rounded-2xl shadow-md hover:shadow-lg transition group overflow-hidden">
     <p className="text-xs uppercase tracking-wide text-gray-500 mb-2">{label}</p>
@@ -71,13 +73,16 @@ const StudentDashboard = () => {
   // Fetch User Data
   const fetchUserData = async (userId) => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_URL_API}/api/student/${userId}`);
+      const token = localStorage.getItem('Authorization');
+      const response = await axios.get(`${import.meta.env.VITE_URL_API}/api/student/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
   
       const data = response.data;
       setUserData(data);
 
-
-      
       // Set job applications if available
       if (data.jobApplied) {
         setJobApplications(data.jobApplied.length || 0);
@@ -304,7 +309,7 @@ const StudentDashboard = () => {
               <div className="grid grid-cols-2 gap-4">
                 <StatCard label="Current Semester GPA" value={userData?.semCgpa[userData.semCgpa.length-1] || "N/A"} />
                 {/* <StatCard label="Overall CGPA" value={overCGPA || "N/A"} valueClassName="text-green-600" /> */}
-                <StatCard label="Phone" value={`+91 ${userData.phone}` || "N/A"} />
+                <StatCard label="Phone" value={userData?.phone ? `+91 ${userData.phone}` : "N/A"} />
                 <StatCard label="Batch" value={userData.batchYear || "N/A"} />
                 <StatCard 
                   label="Re-appear" 

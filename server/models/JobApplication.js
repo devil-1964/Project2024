@@ -1,7 +1,7 @@
 
 const mongoose = require("mongoose");
 
-const jobApplicationSchema = new mongoose.Schema(
+const JobApplication = new mongoose.Schema(
   {
     jobTitle: {
       type: String,
@@ -31,4 +31,4 @@ const jobApplicationSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("JobApplication", jobApplicationSchema);
+module.exports = mongoose.model("JobApplication", JobApplication);

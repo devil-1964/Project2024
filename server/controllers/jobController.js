@@ -1,7 +1,7 @@
-const JobApplication = require("../models/jobApplication");
 const StudentDetails = require("../models/StudentDetails");
 const AdminDetails = require("../models/AdminDetails");
 const exportJobApplicants = require("../utils/excelExporter");
+const JobApplication = require("../models/JobApplication");
 
 
 

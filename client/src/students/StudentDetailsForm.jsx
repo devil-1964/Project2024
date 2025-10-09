@@ -35,7 +35,7 @@ const StudentDetailsForm = () => {
                     ...prevData,
                     userId: userId // Add userId to formData
                 }));
-            } catch (error) {
+            } catch {
                 console.error('Invalid or expired token');
                 navigate('/login'); // Redirect to login page if token is invalid
             }
@@ -77,7 +77,12 @@ const StudentDetailsForm = () => {
         };
 
         try {
-            const response = await axios.post(`${import.meta.env.VITE_URL_API}/api/student/create`, studentData);
+            const token = localStorage.getItem('Authorization');
+            const response = await axios.post(`${import.meta.env.VITE_URL_API}/api/student/create`, studentData, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
             console.log('Student details submitted:', response.data);
             toast.success('Your details have been submitted successfully!');
             navigate("/student/dashboard");

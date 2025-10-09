@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { Edit, Save, X, Linkedin, Github, FileText, Phone, Mail, Loader } from "lucide-react";
 import toast from "react-hot-toast"
@@ -6,17 +6,20 @@ import { jwtDecode } from 'jwt-decode'; // Corrected import
 
 
 // Component for displaying the avatar
+// eslint-disable-next-line react/prop-types
 const ProfileAvatar = ({ name, imageUrl }) => (
   <div className="w-48 h-48 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 text-7xl font-bold">
     {imageUrl ? (
       <img src={imageUrl} alt={name} className="w-full h-full object-cover rounded-full" />
     ) : (
-      name.charAt(0)
+      // eslint-disable-next-line react/prop-types
+      name?.charAt(0) || '?'
     )}
   </div>
 );
 
 // Component for displaying profile statistics in card style
+// eslint-disable-next-line react/prop-types
 const StatCard = ({ label, value, valueClassName = "text-gray-800" }) => (
   <div className="bg-white p-4 rounded-xl shadow-sm">
     <p className="text-sm text-gray-500 font-medium">{label}</p>
@@ -59,9 +62,14 @@ const Profile = () => {
     return average;
   }
 
-  const fetchProfile = async (userId) => {
+  const fetchProfile = useCallback(async (userId) => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_URL_API}/api/student/${userId}`);
+      const token = localStorage.getItem('Authorization');
+      const response = await axios.get(`${import.meta.env.VITE_URL_API}/api/student/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
 
       const data = response.data;
       setProfile(data);
@@ -71,7 +79,7 @@ const Profile = () => {
     } catch (error) {
       console.error('Failed to fetch user data:', error.response ? error.response.data : error.message);
     }
-  };
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem('Authorization');
@@ -84,7 +92,7 @@ const Profile = () => {
         console.error('Failed to decode token:', error);
       }
     }
-  }, []);
+  }, [fetchProfile]);
 
 
   // Handle input changes
@@ -107,7 +115,12 @@ const Profile = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.put(`${import.meta.env.VITE_URL_API}/api/student/update/${temp}`, profile);
+      const token = localStorage.getItem('Authorization');
+      await axios.put(`${import.meta.env.VITE_URL_API}/api/student/update/${temp}`, profile, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       // console.log("Profile updated successfully:", response.data);
       toast.success("Profile updated successfully");
       setIsEditing(false);
