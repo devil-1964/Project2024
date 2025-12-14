@@ -13,44 +13,40 @@ const getAllStudents = async (req, res) => {
 
 // Create a new student
 const createStudent = async (req, res) => {
-  const { userId, name, branch, batchYear, phone, email, linkedinURL, githubURL, resumeURL, semCgpa, activeBacklogs } = req.body;
+  const { userId, name, branch, batchYear, phone, linkedinURL, githubURL, resumeURL, semCgpa, activeBacklogs } = req.body;
 
-  // Basic validation
-  if (!userId || !name || !branch || !batchYear || !phone || !email ) {
+  // Basic validation aligned with StudentDetails schema
+  if (!userId || !name || !branch || !batchYear) {
     return res.status(400).json({ message: "Required fields are missing" });
   }
 
   try {
-    // Create new student entry
+    // Create new student entry (no phone/email in StudentDetails)
     const newStudent = new StudentDetails({
-      _id: userId, // Use userId directly as _id
+      _id: userId,
       name,
       branch,
       batchYear,
-      phone,
-      email,
       linkedinURL,
       githubURL,
       resumeURL,
       semCgpa,
       activeBacklogs,
-      jobApplied: [], // Assuming this is an empty array to start with
+      jobApplied: [],
     });
 
-    // Save the student details
     await newStudent.save();
 
-    // Update the User document to set isFirstLogin to false
-    const user = await User.findById(userId); // Find user by userId
+    // Update the User document
+    const user = await User.findById(userId);
     if (user) {
-      user.isFirstLogin = false; // Set isFirstLogin to false
-      await user.save(); // Save the updated user document
+      // Persist phone on User if provided
+      if (phone) user.phone = phone;
+      user.isFirstLogin = false;
+      await user.save();
     }
 
-    res.status(201).json({
-      message: "Student created successfully",
-      student: newStudent,
-    });
+    res.status(201).json({ message: "Student created successfully", student: newStudent });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error, please try again later" });

@@ -9,10 +9,7 @@ const StudentDetails = require("../models/StudentDetails");
 // Database connection
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URL, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await mongoose.connect(process.env.MONGO_URL);
     console.log("✅ MongoDB Connected for student management");
   } catch (error) {
     console.error("❌ Database connection failed:", error.message);
@@ -123,6 +120,7 @@ const resetStudents = async () => {
         email: studentData.email,
         password: hashedPassword,
         role: "student",
+        phone: studentData.phone,
         isFirstLogin: false,
       });
 
@@ -136,8 +134,6 @@ const resetStudents = async () => {
         name: studentData.name,
         branch: studentData.branch,
         batchYear: studentData.batchYear,
-        phone: studentData.phone,
-        email: studentData.email,
         linkedinURL: studentData.linkedinURL,
         githubURL: studentData.githubURL,
         resumeURL: "", // Empty initially
@@ -199,6 +195,7 @@ const createStudent = async (
       email,
       password: hashedPassword,
       role: "student",
+      phone,
       isFirstLogin: false,
     });
 
@@ -220,8 +217,6 @@ const createStudent = async (
       name,
       branch,
       batchYear: parseInt(batchYear),
-      phone,
-      email,
       linkedinURL: "",
       githubURL: "",
       resumeURL: "",
