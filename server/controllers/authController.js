@@ -8,8 +8,10 @@ const generateToken = (userId, role) => {
 };
 
 // Register User
+const AdminDetails = require("../models/AdminDetails");
+
 exports.registerUser = async (req, res) => {
-  const { username, email, password, role } = req.body;
+  const { username, email, password, role, phone } = req.body;
 
   try {
     // Check if user already exists
@@ -27,7 +29,17 @@ exports.registerUser = async (req, res) => {
       email,
       password: hashedPassword,
       role,
+      phone,
     });
+
+    // If registering an admin, initialize AdminDetails
+    if (role === "admin") {
+      await AdminDetails.findByIdAndUpdate(
+        user._id,
+        { _id: user._id, name: username },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
+    }
 
     // Respond with JWT
     const token = generateToken(user._id, user.role);
@@ -47,7 +59,7 @@ exports.loginUser = async (req, res) => {
 
   try {
     // Check if user exists
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).select("+password");
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -63,7 +75,7 @@ exports.loginUser = async (req, res) => {
     res.status(200).json({
       message: "Login successful",
       token,
-      user: { id: user._id, username: user.username, email: user.email, role: user.role ,isFirstLogin:user.isFirstLogin},
+      user: { id: user._id, username: user.username, email: user.email, role: user.role, phone: user.phone, isFirstLogin: user.isFirstLogin },
     });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
