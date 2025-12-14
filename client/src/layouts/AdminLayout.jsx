@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, Outlet, useNavigate } from 'react-router-dom';  // Use Link from react-router-dom
 import { LayoutDashboard, LogOut, Menu, Plus, X } from 'lucide-react'; // Removed BarChart and Phone icons
 import logo from "../assets/dcrustLogo.png";
@@ -13,9 +13,29 @@ const AdminLayout = () => {
     const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
     const handleLogout = () => {
         localStorage.removeItem('Authorization');
+        localStorage.removeItem('user');
         toast.success('Logged out successfully');
         navigate('/login');
     }
+
+    useEffect(() => {
+        const token = localStorage.getItem('Authorization');
+        const user = localStorage.getItem('user');
+        if (!token || !user) {
+            setIsAuthenticated(false);
+            navigate('/login');
+            return;
+        }
+        try {
+            const parsed = JSON.parse(user);
+            const isAdmin = parsed?.role === 'admin';
+            setIsAuthenticated(!!isAdmin);
+            if (!isAdmin) navigate('/');
+        } catch {
+            setIsAuthenticated(false);
+            navigate('/login');
+        }
+    }, [navigate]);
 
     return (
         <>

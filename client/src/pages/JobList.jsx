@@ -35,9 +35,13 @@ const JobList = ({ userRole, isId }) => {
         fetchJobs();
         const loadApplied = async () => {
             try {
-                const res = await api.get('/api/students/applied/list');
-                setAppliedIds(res.data.appliedJobIds || []);
-            } catch (e) {}
+                const res = await api.get('/api/student/applied/list');
+                const payload = res.data;
+                const ids = Array.isArray(payload) ? payload : (payload?.appliedJobIds || payload?.ids || []);
+                setAppliedIds(ids);
+            } catch (e) {
+                setAppliedIds([]);
+            }
         };
         if (!isAdmin) loadApplied();
     }, []);
@@ -50,16 +54,10 @@ const JobList = ({ userRole, isId }) => {
 
     // Handle job deletion
     const handleDelete = async () => {
-        // console.log(isId)
         try {
-            await axios.delete(`${import.meta.env.VITE_URL_API}/api/jobs/${selectedJobId}/`, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('Authorization')}`,
-                },
-                data: { adminId: id }, // Correct placement of data
-            });
+            await api.delete(`/api/jobs/${selectedJobId}/`, { data: { adminId: id } });
             toast.success('Job deleted successfully!');
-            setJobs(jobs.filter((job) => job._id !== selectedJobId)); // Update state
+            setJobs(jobs.filter((job) => job._id !== selectedJobId));
         } catch (error) {
             console.error('Error deleting job:', error);
             toast.error('Failed to delete job. Please try again.');
@@ -119,33 +117,17 @@ const JobList = ({ userRole, isId }) => {
     // Export job applicants
     const handleExport = async (jobId) => {
         try {
-            // Trigger the export by making a GET request to the backend
-            const response = await fetch(`${import.meta.env.VITE_URL_API}/api/jobs/${jobId}/export`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            // Check if the response is successful (status code 200)
-            if (response.ok) {
-                // Create a link element to trigger the file download
-                const blob = await response.blob();  // Get the file content as a Blob
-                const url = window.URL.createObjectURL(blob);  // Create an object URL for the blob
-                const a = document.createElement('a');  // Create an anchor element
-                a.href = url;  // Set the href to the object URL
-                a.download = `job_${jobId}_applicants.xlsx`;  // Set the download filename
-                a.click();  // Programmatically trigger the click to start downloading
-                toast.success("Starting Download");
-                window.URL.revokeObjectURL(url);  // Clean up the object URL
-            } else {
-                const errorData = await response.json();
-                console.error("Error exporting file:", errorData.message || 'Unknown error');
-                toast.error(errorData.message);
-            }
+            const response = await api.get(`/api/jobs/${jobId}/export`, { responseType: 'blob' });
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `job_${jobId}_applicants.xlsx`;
+            a.click();
+            toast.success('Starting Download');
+            window.URL.revokeObjectURL(url);
         } catch (error) {
-            console.error("Network error:", error);
-            toast.error('Error exporting file. Please check your network connection and try again.');
+            console.error('Error exporting file:', error);
+            toast.error(error.response?.data?.message || 'Error exporting file.');
         }
     };
 
@@ -269,8 +251,8 @@ const JobList = ({ userRole, isId }) => {
 };
 
 JobList.propTypes = {
-    userRole: PropTypes.string.isRequired,
-    isId: PropTypes.string.isRequired
+    userRole: PropTypes.string,
+    isId: PropTypes.string
 };
 
 export default JobList;

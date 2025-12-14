@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, Outlet, useNavigate } from 'react-router-dom';  // Use Link from react-router-dom
 import { Home, LayoutDashboard, LogOut, Menu, Plus, User, Users, X } from 'lucide-react'; // Removed BarChart and Phone icons
 import logo from "../assets/dcrustLogo.png";
 import dp from "../assets/profile.png";
 import toast from 'react-hot-toast';
+import { jwtDecode } from 'jwt-decode';
 
 const StudentLayout = () => {
-    const [isAuthenticated, setIsAuthenticated] = useState(true);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const navigate = useNavigate();
@@ -14,9 +15,33 @@ const StudentLayout = () => {
     const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
     const handleLogout = () => {
         localStorage.removeItem('Authorization');
+        localStorage.removeItem('user');
         toast.success('Logged out successfully');
         navigate('/login');
     }
+
+    useEffect(() => {
+        const token = localStorage.getItem('Authorization');
+        const userRaw = localStorage.getItem('user');
+        if (!token || !userRaw) {
+            setIsAuthenticated(false);
+            return navigate('/login');
+        }
+        try {
+            const decoded = jwtDecode(token);
+            const user = JSON.parse(userRaw);
+            if (user.role !== 'student') {
+                toast.error('Unauthorized access');
+                navigate('/');
+                return;
+            }
+            setIsAuthenticated(true);
+        } catch (e) {
+            setIsAuthenticated(false);
+            navigate('/login');
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return (
         <>

@@ -1,28 +1,28 @@
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import apiClient from '../api/client';
+import { debounce } from 'lodash';
 
 const SignupPage = () => {
   const [rollNo, setRollNo] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [phone, setPhone] = useState('');
-  const [role, setRole] = useState('student');
+  // Role is fixed to student per backend model
+  const role = 'student';
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  const submitSignup = async () => {
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_URL_API}/api/auth/register`,
+      const response = await apiClient.post(
+        '/api/auth/register',
         { username: rollNo, email, password, role, phone }
       );
 
       if (response.status === 201) {
         toast.success('Signup successful! Redirecting to login page...');
-        navigate('/login'); // Redirect to login page after successful signup
+        navigate('/login');
       }
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
@@ -31,6 +31,13 @@ const SignupPage = () => {
         toast.error('Signup failed. Please try again.');
       }
     }
+  };
+
+  const debouncedSubmit = debounce(submitSignup, 700, { leading: true, trailing: false });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    debouncedSubmit();
   };
 
   return (
@@ -77,19 +84,7 @@ const SignupPage = () => {
                 required
               />
             </div>
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text font-semibold">Role</span>
-              </label>
-              <select
-                className="select select-bordered"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-              >
-                <option value="student">Student</option>
-                <option value="admin">Admin</option>
-              </select>
-            </div>
+            {/* Role selection removed; default is student */}
             <div className="form-control">
               <label className="label">
                 <span className="label-text font-semibold">Password</span>

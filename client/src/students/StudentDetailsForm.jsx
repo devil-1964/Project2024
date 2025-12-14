@@ -9,12 +9,10 @@ const StudentDetailsForm = () => {
     
     // State for form data
     const [formData, setFormData] = useState({
-        userId: '', // Initially empty
+        userId: '',
         name: '',
         branch: '',
         batchYear: '',
-        phone: '',
-        email: '',
         linkedinURL: '',
         githubURL: '',
         resumeURL: '',
@@ -22,25 +20,16 @@ const StudentDetailsForm = () => {
         activeBacklogs: 0
     });
 
-    // UseEffect to decode JWT and set userId in formData
+    // Ensure user is logged in
     useEffect(() => {
-        const token = localStorage.getItem('Authorization'); // Assuming the token is saved in localStorage after login
-        
-        if (token) {
-            try {
-                const decodedToken = jwtDecode(token); // Decode the token using jwt-decode
-                const userId = decodedToken.userId; // Assuming the userId is stored in the token
-                console.log(userId)
-                setFormData((prevData) => ({
-                    ...prevData,
-                    userId: userId // Add userId to formData
-                }));
-            } catch {
-                console.error('Invalid or expired token');
-                navigate('/login'); // Redirect to login page if token is invalid
-            }
+        const token = localStorage.getItem('Authorization');
+        if (!token) {
+            navigate('/login');
         } else {
-            navigate('/login'); // Redirect to login page if no token found
+            try {
+                const decoded = jwtDecode(token);
+                setFormData(prev => ({ ...prev, userId: decoded.userId }));
+            } catch { navigate('/login'); }
         }
     }, [navigate]);
 
@@ -70,21 +59,25 @@ const StudentDetailsForm = () => {
         ).filter(cgpa => cgpa !== null);
 
         const studentData = {
-            ...formData,
-            semCgpa: validatedCgpa,
+            userId: formData.userId,
+            name: formData.name,
+            branch: formData.branch,
             batchYear: parseInt(formData.batchYear),
-            activeBacklogs: parseInt(formData.activeBacklogs)
+            linkedinURL: formData.linkedinURL || '',
+            githubURL: formData.githubURL || '',
+            resumeURL: formData.resumeURL,
+            semCgpa: validatedCgpa,
+            activeBacklogs: parseInt(formData.activeBacklogs) || 0,
         };
 
         try {
-            const response = await api.post(`/api/students/create`, studentData);
+            const response = await api.post(`/api/student/create`, studentData);
             console.log('Student details submitted:', response.data);
             toast.success('Your details have been submitted successfully!');
             navigate("/student/dashboard");
         } catch (error) {
-            console.log(studentData);
-            console.error('Error submitting student details:', error);
-            toast.error('Failed to submit details. Please try again.');
+            console.error('Error submitting student details:', error?.response?.data || error.message);
+            toast.error(error?.response?.data?.message || 'Failed to submit details. Please try again.');
         }
     };
 
@@ -94,14 +87,7 @@ const StudentDetailsForm = () => {
             <div className="bg-white p-8 shadow-lg rounded-lg">
                 <form onSubmit={handleSubmit}>
                     <div className="space-y-4">
-                        {/* Hidden userId field */}
-                        <input
-                            type="hidden"
-                            id="userId"
-                            name="userId"
-                            value={formData.userId}
-                            onChange={handleChange}
-                        />
+                        {/* userId is derived from token and sent with payload */}
 
                         <div>
                             <label htmlFor="name" className="block text-sm font-medium">Full Name</label>
@@ -147,30 +133,7 @@ const StudentDetailsForm = () => {
                                 max="2030"
                             />
                         </div>
-                        <div>
-                            <label htmlFor="phone" className="block text-sm font-medium">Phone Number</label>
-                            <input
-                                type="tel"
-                                id="phone"
-                                name="phone"
-                                value={formData.phone}
-                                onChange={handleChange}
-                                className="input input-bordered w-full"
-                                required
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="email" className="block text-sm font-medium">Email</label>
-                            <input
-                                type="email"
-                                id="email"
-                                name="email"
-                                value={formData.email}
-                                onChange={handleChange}
-                                className="input input-bordered w-full"
-                                required
-                            />
-                        </div>
+                        {/* Phone and email removed from StudentDetails; they belong to User */}
                         <div>
                             <label htmlFor="linkedinURL" className="block text-sm font-medium">LinkedIn Profile (Optional)</label>
                             <input

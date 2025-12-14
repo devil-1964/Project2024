@@ -1,18 +1,17 @@
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import apiClient from '../api/client';
+import { debounce } from 'lodash';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  const submitLogin = async () => {
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_URL_API}/api/auth/login`,
+      const response = await apiClient.post(
+        '/api/auth/login',
         { email, password }
       );
 
@@ -43,6 +42,13 @@ const LoginPage = () => {
         toast.error('Login failed. Please try again.');
       }
     }
+  };
+
+  const debouncedSubmit = debounce(submitLogin, 500, { leading: true, trailing: false });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    debouncedSubmit();
   };
 
   return (

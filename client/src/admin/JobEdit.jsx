@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/client';
 import toast from 'react-hot-toast';
 import moment from 'moment'
 import { Briefcase, MapPin, Building, CheckCircle, X, Save } from 'lucide-react';
@@ -16,11 +16,7 @@ const JobEdit = () => {
     // Fetch job details using Axios
     const fetchJob = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_URL_API}/api/jobs/${id}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('Authorization')}`,
-          },
-        });
+        const response = await api.get(`/api/jobs/${id}`);
         setJob(response.data);
       } catch (error) {
         const message = error.response?.data?.message || 'Job not found!';
@@ -86,12 +82,7 @@ const JobEdit = () => {
     };
 
     try {
-      await axios.put(`${import.meta.env.VITE_URL_API}/api/jobs/${id}`, payload, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('Authorization')}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      await api.put(`/api/jobs/${id}`, payload);
 
       toast.success('Job updated successfully!');
       navigate('/admin/jobs');
