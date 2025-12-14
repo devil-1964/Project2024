@@ -12,12 +12,13 @@ const LoginPage = () => {
 
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_URL_API}/api/auth/login`, // Replace with your backend login endpoint
+        `${import.meta.env.VITE_URL_API}/api/auth/login`,
         { email, password }
       );
 
-      const {token, user } = response.data; // Assuming the backend returns a JWT token and user role
-      localStorage.setItem('Authorization', `${token}`);
+      const { token, user } = response.data;
+      localStorage.setItem('Authorization', token);
+      localStorage.setItem('user', JSON.stringify(user));
       toast.success('Logged in successfully');
 
       // Redirect based on the user's role

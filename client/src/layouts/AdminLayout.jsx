@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, Outlet, useNavigate } from 'react-router-dom';  // Use Link from react-router-dom
-import {  LayoutDashboard, LogOut, Menu, Plus, X } from 'lucide-react'; // Removed BarChart and Phone icons
+import { LayoutDashboard, LogOut, Menu, Plus, X } from 'lucide-react'; // Removed BarChart and Phone icons
 import logo from "../assets/dcrustLogo.png";
 import toast from 'react-hot-toast';
 

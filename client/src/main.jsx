@@ -108,7 +108,7 @@ const router = createBrowserRouter([
       },
       {
         path: 'dashboard',
-        element: <StudentDashboard/>,
+        element: <StudentDashboard />,
       },
     ],
   },
@@ -118,16 +118,16 @@ ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <RouterProvider router={router} />
     <Toaster
-                position="bottom-right"
-                toastOptions={{
-                    duration: 3000,
-                    style: {
-                        background: 'lightblue',
-                        color: 'black',
-                        borderRadius: '8px',
-                        padding: '8px',
-                    },
-                }}
-            />
+      position="bottom-right"
+      toastOptions={{
+        duration: 3000,
+        style: {
+          background: 'lightblue',
+          color: 'black',
+          borderRadius: '8px',
+          padding: '8px',
+        },
+      }}
+    />
   </React.StrictMode>
 );

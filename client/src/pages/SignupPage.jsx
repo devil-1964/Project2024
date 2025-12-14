@@ -1,4 +1,4 @@
-import  { useState } from 'react';
+import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -7,18 +7,17 @@ const SignupPage = () => {
   const [rollNo, setRollNo] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState('');
+  const [role, setRole] = useState('student');
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      // Automatically set role to "student"
-      const role = 'student';
-
       const response = await axios.post(
-        `${import.meta.env.VITE_URL_API}/api/auth/register`, // Replace with your backend signup endpoint
-        { username: rollNo, email, password, role } // Send Roll No as username
+        `${import.meta.env.VITE_URL_API}/api/auth/register`,
+        { username: rollNo, email, password, role, phone }
       );
 
       if (response.status === 201) {
@@ -55,6 +54,18 @@ const SignupPage = () => {
             </div>
             <div className="form-control">
               <label className="label">
+                <span className="label-text font-semibold">Phone (optional)</span>
+              </label>
+              <input
+                type="tel"
+                placeholder="Enter your phone number"
+                className="input input-bordered"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+              />
+            </div>
+            <div className="form-control">
+              <label className="label">
                 <span className="label-text font-semibold">Email</span>
               </label>
               <input
@@ -65,6 +76,19 @@ const SignupPage = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
+            </div>
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text font-semibold">Role</span>
+              </label>
+              <select
+                className="select select-bordered"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+              >
+                <option value="student">Student</option>
+                <option value="admin">Admin</option>
+              </select>
             </div>
             <div className="form-control">
               <label className="label">
