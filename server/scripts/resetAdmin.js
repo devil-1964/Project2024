@@ -9,10 +9,7 @@ const AdminDetails = require("../models/AdminDetails");
 // Database connection
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URL, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await mongoose.connect(process.env.MONGO_URL);
     console.log("✅ MongoDB Connected for admin reset");
   } catch (error) {
     console.error("❌ Database connection failed:", error.message);
@@ -65,7 +62,6 @@ const resetAdmins = async () => {
     const newAdminDetails = await AdminDetails.create({
       _id: newAdminUser._id,
       name: newAdminData.username,
-      phone: "9999999999", // Default phone number
       jobPosted: [],
     });
 
@@ -88,13 +84,7 @@ const resetAdmins = async () => {
 };
 
 // Function to create additional admin (without removing existing ones)
-const createAdditionalAdmin = async (
-  username,
-  email,
-  password,
-  name,
-  phone
-) => {
+const createAdditionalAdmin = async (username, email, password, name) => {
   try {
     console.log(`🔄 Creating additional admin: ${email}\n`);
 
@@ -122,7 +112,6 @@ const createAdditionalAdmin = async (
     const newAdminDetails = await AdminDetails.create({
       _id: newAdminUser._id,
       name: name || username,
-      phone: phone || "0000000000",
       jobPosted: [],
     });
 
@@ -156,29 +145,29 @@ const main = async () => {
       await resetAdmins();
     } else if (command === "create") {
       // Create additional admin
-      const [, username, email, password, name, phone] = args;
+      const [, username, email, password, name] = args;
 
       if (!username || !email || !password) {
         console.log(
-          "❌ Usage: node resetAdmin.js create <username> <email> <password> [name] [phone]"
+          "❌ Usage: node resetAdmin.js create <username> <email> <password> [name]"
         );
         console.log(
-          '📝 Example: node resetAdmin.js create john john@admin.com password123 "John Doe" "1234567890"'
+          '📝 Example: node resetAdmin.js create john john@admin.com password123 "John Doe"'
         );
         process.exit(1);
       }
 
-      await createAdditionalAdmin(username, email, password, name, phone);
+      await createAdditionalAdmin(username, email, password, name);
     } else {
       console.log("📖 Usage:");
       console.log("  Reset all admins:     node resetAdmin.js reset");
       console.log(
-        "  Create new admin:     node resetAdmin.js create <username> <email> <password> [name] [phone]"
+        "  Create new admin:     node resetAdmin.js create <username> <email> <password> [name]"
       );
       console.log("\n📝 Examples:");
       console.log("  node resetAdmin.js reset");
       console.log(
-        '  node resetAdmin.js create john john@admin.com password123 "John Doe" "1234567890"'
+        '  node resetAdmin.js create john john@admin.com password123 "John Doe"'
       );
     }
   } catch (error) {

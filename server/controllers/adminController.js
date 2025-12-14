@@ -13,21 +13,16 @@ const getAllAdmins = async (req, res) => {
 
 // Create or update admin profile
 const createAdmin = async (req, res) => {
-  const { _id, name, phone } = req.body;
-  if (!_id || !name || !phone)
-    return res.status(400).json({ message: "All fields required" });
+  const { _id, name } = req.body;
+  if (!_id || !name) return res.status(400).json({ message: "All fields required" });
   try {
-    const user = await User.findById(_id);
-    if (!user || user.role !== "admin")
-      return res.status(404).json({ message: "User not found or not admin" });
     let admin = await AdminDetails.findById(_id);
     if (admin) {
       admin.name = name;
-      admin.phone = phone;
       await admin.save();
       return res.status(200).json({ message: "Admin updated", admin });
     }
-    admin = new AdminDetails({ _id, name, phone, jobPosted: [] });
+    admin = new AdminDetails({ _id, name, jobPosted: [] });
     await admin.save();
     res.status(201).json({ message: "Admin created", admin });
   } catch (error) {
@@ -97,14 +92,13 @@ const updateAdmin = async (req, res) => {
 const updateCurrentAdminProfile = async (req, res) => {
   try {
     const adminId = req.user._id;
-    const { name, phone } = req.body;
+    const { name } = req.body;
     const admin = await AdminDetails.findByIdAndUpdate(
       adminId,
-      { name, phone },
+      { name },
       { new: true, runValidators: true }
     );
-    if (!admin)
-      return res.status(404).json({ message: "Admin profile not found" });
+    if (!admin) return res.status(404).json({ message: "Admin profile not found" });
     res.status(200).json({ message: "Profile updated", admin });
   } catch (error) {
     res.status(500).json({ message: "Server error" });
