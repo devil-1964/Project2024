@@ -30,23 +30,7 @@ const createAdmin = async (req, res) => {
   }
 };
 
-// Get admin profile by ID
-const getAdminProfile = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    // Find admin details by ID
-    const admin = await AdminDetails.findById(id).populate("jobPosted");
-    if (!admin) {
-      return res.status(404).json({ message: "Admin not found" });
-    }
-
-    res.status(200).json(admin);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error, please try again later" });
-  }
-};
+// Legacy getAdminProfile removed; use current admin routes
 
 // Get current admin profile
 const getCurrentAdminProfile = async (req, res) => {
@@ -61,32 +45,7 @@ const getCurrentAdminProfile = async (req, res) => {
   }
 };
 
-// Update admin details
-const updateAdmin = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { name, phone } = req.body;
-
-    // Find and update admin details
-    const admin = await AdminDetails.findByIdAndUpdate(
-      id,
-      { name, phone },
-      { new: true, runValidators: true }
-    );
-
-    if (!admin) {
-      return res.status(404).json({ message: "Admin not found" });
-    }
-
-    res.status(200).json({
-      message: "Admin details updated successfully",
-      admin,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error, please try again later" });
-  }
-};
+// Legacy updateAdmin removed; use updateCurrentAdminProfile
 
 // Update current admin profile
 const updateCurrentAdminProfile = async (req, res) => {

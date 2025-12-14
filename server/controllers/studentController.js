@@ -62,7 +62,7 @@ const updateStudent = async (req, res) => {
   console.log(req.params)
   try {
     const updatedStudent = await StudentDetails.findByIdAndUpdate(
-      studentId, // Use the userId as _id for the update
+      studentId, 
       updates,
       { new: true }
     ).populate("jobApplied");
@@ -98,9 +98,26 @@ const getStudentById = async (req, res) => {
   }
 };
 
+// Get list of job IDs the current student has applied to
+const getAppliedJobs = async (req, res) => {
+  try {
+    const studentId = req.user._id;
+    const student = await StudentDetails.findById(studentId).select("jobApplied");
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+    const appliedJobIds = student.jobApplied.map((id) => id.toString());
+    res.status(200).json({ appliedJobIds });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error, please try again later" });
+  }
+};
+
 module.exports = {
   getAllStudents,
   createStudent,
   updateStudent,
-  getStudentById
+  getStudentById,
+  getAppliedJobs,
 };
