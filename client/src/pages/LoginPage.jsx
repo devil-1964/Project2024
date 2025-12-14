@@ -2,7 +2,7 @@ import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { Link, useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
-import { debounce } from 'lodash';
+import { debounce } from '../utils/debounce';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
