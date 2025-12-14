@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import axios from 'axios';
+import api from '../api/client';
 import toast from 'react-hot-toast';
 import moment from "moment"
 import { useNavigate } from 'react-router-dom';
@@ -10,6 +10,7 @@ const JobList = ({ userRole, isId }) => {
     const [jobs, setJobs] = useState([]);
     const [selectedJobId, setSelectedJobId] = useState(null);
     const [loading, setLoading] = useState(true)
+    const [appliedIds, setAppliedIds] = useState([])
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const navigate = useNavigate();
     const id = isId
@@ -20,11 +21,7 @@ const JobList = ({ userRole, isId }) => {
     // Fetch job list from the server
     const fetchJobs = async () => {
         try {
-            const response = await axios.get(`${import.meta.env.VITE_URL_API}/api/jobs`, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('Authorization')}`,
-                },
-            });
+            const response = await api.get(`/api/jobs`);
             // console.log(response)
             setJobs(response.data);
             setLoading(false)
@@ -36,6 +33,13 @@ const JobList = ({ userRole, isId }) => {
 
     useEffect(() => {
         fetchJobs();
+        const loadApplied = async () => {
+            try {
+                const res = await api.get('/api/students/applied/list');
+                setAppliedIds(res.data.appliedJobIds || []);
+            } catch (e) {}
+        };
+        if (!isAdmin) loadApplied();
     }, []);
 
     // Open delete modal
@@ -74,14 +78,9 @@ const JobList = ({ userRole, isId }) => {
 
         try {
             // Send POST request to apply for a job
-            const token = localStorage.getItem('Authorization');
-            const response = await axios.post(`${import.meta.env.VITE_URL_API}/api/jobs/apply`, {
+            const response = await api.post(`/api/jobs/apply`, {
                 userId: id,    // The ID of the user applying
                 jobId: jobId   // The ID of the job being applied for
-            }, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
             });
 
             // Assuming the API sends a success message or status
@@ -89,9 +88,7 @@ const JobList = ({ userRole, isId }) => {
                 toast.success('Job application submitted successfully!');
 
                 // Update job status in the UI to reflect application
-                setJobs(jobs.map((job) =>
-                    job._id === jobId ? { ...job, applied: true } : job  // Mark job as applied
-                ));
+                setAppliedIds(prev => [...prev, jobId]);
             }
             else if (response.data.message === 'Student has already applied for this job') {
                 toast.success('Student has already applied for this job')
@@ -107,7 +104,7 @@ const JobList = ({ userRole, isId }) => {
                 console.error('Error response:', error.response.data);
             }
 
-            toast.error(error.response.data.message);
+            toast.error(error.response?.data?.message || 'Error applying for job');
         }
     };
 
@@ -231,10 +228,11 @@ const JobList = ({ userRole, isId }) => {
                                     </button>
 
                                     <button
-                                        className={`bg-blue-500 hover:bg-blue-600 w-full  text-white px-4 py-2 mt-4 rounded-lg  transition duration-300 ease-in-out`}
+                                        disabled={appliedIds.includes(job._id)}
+                                        className={`w-full text-white px-4 py-2 mt-4 rounded-lg transition duration-300 ease-in-out ${appliedIds.includes(job._id) ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'}`}
                                         onClick={() => handleApply(job._id)}
                                     >
-                                        Apply Now
+                                        {appliedIds.includes(job._id) ? 'Applied' : 'Apply Now'}
                                     </button>
                                 </div>
                             )

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import axios from "axios";
+import api from "../api/client";
 import { Edit, Save, X, Linkedin, Github, FileText, Phone, Mail, Loader } from "lucide-react";
 import toast from "react-hot-toast"
 import { jwtDecode } from 'jwt-decode'; // Corrected import
@@ -65,11 +65,7 @@ const Profile = () => {
   const fetchProfile = useCallback(async (userId) => {
     try {
       const token = localStorage.getItem('Authorization');
-      const response = await axios.get(`${import.meta.env.VITE_URL_API}/api/student/${userId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      const response = await api.get(`/api/students/${userId}`);
 
       const data = response.data;
       setProfile(data);
@@ -116,11 +112,7 @@ const Profile = () => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('Authorization');
-      await axios.put(`${import.meta.env.VITE_URL_API}/api/student/update/${temp}`, profile, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      await api.put(`/api/students/update/${temp}`, profile);
       // console.log("Profile updated successfully:", response.data);
       toast.success("Profile updated successfully");
       setIsEditing(false);

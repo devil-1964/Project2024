@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api/client';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import {jwtDecode} from 'jwt-decode'; // Corrected import
@@ -77,12 +77,7 @@ const StudentDetailsForm = () => {
         };
 
         try {
-            const token = localStorage.getItem('Authorization');
-            const response = await axios.post(`${import.meta.env.VITE_URL_API}/api/student/create`, studentData, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
+            const response = await api.post(`/api/students/create`, studentData);
             console.log('Student details submitted:', response.data);
             toast.success('Your details have been submitted successfully!');
             navigate("/student/dashboard");
