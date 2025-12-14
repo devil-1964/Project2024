@@ -2,31 +2,38 @@ const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
   {
-    username: {
-      type: String,
-      required: [true, "Please add the user name"],
-      unique: [true, "Roll No already registered"]
-    },
+    username: { type: String, required: true, unique: true, trim: true },
     email: {
       type: String,
-      required: [true, "Please add the email address"],
-      unique: [true, "Email address already exists"],
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
     },
-    password: {
-      type: String,
-      required: [true, "Please add the user password"],
-    },
-    role: {
-      type: String,
-      enum: ["admin", "student"],
-      required: [true, "Please specify the user role"],
-    },
-    isFirstLogin: {
-      type: Boolean,
-      default: true, // Default to true for new users
-    },
+    password: { type: String, required: true, select: false },
+    role: { type: String, enum: ["admin", "student"], required: true },
+    phone: { type: String, trim: true },
+    isFirstLogin: { type: Boolean, default: true },
   },
-  { timestamps: true }
+  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
+
+userSchema.index({ username: 1 }, { unique: true });
+userSchema.index({ email: 1 }, { unique: true });
+
+// Virtual relations to role-specific details
+userSchema.virtual("studentDetails", {
+  ref: "StudentDetails",
+  localField: "_id",
+  foreignField: "_id",
+  justOne: true,
+});
+
+userSchema.virtual("adminDetails", {
+  ref: "AdminDetails",
+  localField: "_id",
+  foreignField: "_id",
+  justOne: true,
+});
 
 module.exports = mongoose.model("User", userSchema);

@@ -14,7 +14,7 @@ import {
   Loader
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import apiClient from '../api/client';
 
 // ProfileAvatar Component
 // eslint-disable-next-line react/prop-types
@@ -73,19 +73,18 @@ const StudentDashboard = () => {
   // Fetch User Data
   const fetchUserData = async (userId) => {
     try {
-      const token = localStorage.getItem('Authorization');
-      const response = await axios.get(`${import.meta.env.VITE_URL_API}/api/student/${userId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      const response = await apiClient.get(`/api/student/${userId}`);
   
       const data = response.data;
       setUserData(data);
 
       // Set job applications if available
-      if (data.jobApplied) {
-        setJobApplications(data.jobApplied.length || 0);
+      try {
+        const appliedRes = await apiClient.get('/api/student/applied/list');
+        const appliedIds = appliedRes.data || [];
+        setJobApplications(appliedIds.length);
+      } catch (e) {
+        setJobApplications(0);
       }
     } catch (error) {
       console.error('Failed to fetch user data:', error.response ? error.response.data : error.message);
@@ -99,8 +98,7 @@ const StudentDashboard = () => {
     if (token) {
       try {
         const decoded = jwtDecode(token);
-        const userId = decoded.userId;
-        fetchUserData(userId);
+        fetchUserData(decoded.userId);
       } catch (error) {
         console.error('Failed to decode token:', error);
       }
@@ -112,7 +110,7 @@ const StudentDashboard = () => {
     const fetchWeather = async () => {
       const url = `https://api.open-meteo.com/v1/forecast?latitude=29.0402&longitude=77.0927&hourly=temperature_2m`;
       try {
-        const response = await axios.get(url);
+        const response = await apiClient.get(url);
         const data = response.data;
         const currentHour = new Date().getHours();
         const isDay = currentHour >= 6 && currentHour < 18;

@@ -1,29 +1,28 @@
-import  { useState } from 'react';
+import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import apiClient from '../api/client';
+import { debounce } from '../utils/debounce';
 
 const SignupPage = () => {
   const [rollNo, setRollNo] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState('');
+  // Role is fixed to student per backend model
+  const role = 'student';
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  const submitSignup = async () => {
     try {
-      // Automatically set role to "student"
-      const role = 'student';
-
-      const response = await axios.post(
-        `${import.meta.env.VITE_URL_API}/api/auth/register`, // Replace with your backend signup endpoint
-        { username: rollNo, email, password, role } // Send Roll No as username
+      const response = await apiClient.post(
+        '/api/auth/register',
+        { username: rollNo, email, password, role, phone }
       );
 
       if (response.status === 201) {
         toast.success('Signup successful! Redirecting to login page...');
-        navigate('/login'); // Redirect to login page after successful signup
+        navigate('/login');
       }
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
@@ -32,6 +31,13 @@ const SignupPage = () => {
         toast.error('Signup failed. Please try again.');
       }
     }
+  };
+
+  const debouncedSubmit = debounce(submitSignup, 700, { leading: true, trailing: false });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    debouncedSubmit();
   };
 
   return (
@@ -55,6 +61,18 @@ const SignupPage = () => {
             </div>
             <div className="form-control">
               <label className="label">
+                <span className="label-text font-semibold">Phone (optional)</span>
+              </label>
+              <input
+                type="tel"
+                placeholder="Enter your phone number"
+                className="input input-bordered"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+              />
+            </div>
+            <div className="form-control">
+              <label className="label">
                 <span className="label-text font-semibold">Email</span>
               </label>
               <input
@@ -66,6 +84,7 @@ const SignupPage = () => {
                 required
               />
             </div>
+            {/* Role selection removed; default is student */}
             <div className="form-control">
               <label className="label">
                 <span className="label-text font-semibold">Password</span>

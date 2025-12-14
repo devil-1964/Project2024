@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import axios from "axios";
+import api from "../api/client";
 import { Edit, Save, X, Linkedin, Github, FileText, Phone, Mail, Loader } from "lucide-react";
 import toast from "react-hot-toast"
 import { jwtDecode } from 'jwt-decode'; // Corrected import
@@ -36,8 +36,6 @@ const Profile = () => {
     name: "",
     branch: "",
     batchYear: "",
-    phone: "",
-    email: "",
     linkedinURL: "",
     githubURL: "",
     resumeURL: "",
@@ -65,11 +63,7 @@ const Profile = () => {
   const fetchProfile = useCallback(async (userId) => {
     try {
       const token = localStorage.getItem('Authorization');
-      const response = await axios.get(`${import.meta.env.VITE_URL_API}/api/student/${userId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      const response = await api.get(`/api/student/${userId}`);
 
       const data = response.data;
       setProfile(data);
@@ -116,11 +110,17 @@ const Profile = () => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('Authorization');
-      await axios.put(`${import.meta.env.VITE_URL_API}/api/student/update/${temp}`, profile, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      const payload = {
+        name: profile.name,
+        branch: profile.branch,
+        batchYear: profile.batchYear,
+        linkedinURL: profile.linkedinURL,
+        githubURL: profile.githubURL,
+        resumeURL: profile.resumeURL,
+        semCgpa: profile.semCgpa,
+        activeBacklogs: profile.activeBacklogs,
+      };
+      await api.put(`/api/student/update/${temp}`, payload);
       // console.log("Profile updated successfully:", response.data);
       toast.success("Profile updated successfully");
       setIsEditing(false);
@@ -189,20 +189,7 @@ const Profile = () => {
                     placeholder="Batch Year"
                     type="number"
                   />
-                  <input
-                    name="phone"
-                    value={profile.phone}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border rounded"
-                    placeholder="Phone"
-                  />
-                  <input
-                    name="email"
-                    value={profile.email}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border rounded"
-                    placeholder="Email"
-                  />
+                  {/* Phone and Email belong to User and are not editable here */}
                   <input
                     name="linkedinURL"
                     value={profile.linkedinURL}
@@ -294,14 +281,7 @@ const Profile = () => {
                 {/* Displaying Profile Links */}
                 <div className="space-y-4 flex flex-col">
                   <div className="flex flex-wrap  gap-3 justify-between">
-                    <p className="flex items-center text-gray-600 hover:bg-blue-600 p-2 hover:shadow-md hover:text-white rounded-full">
-                      <Phone size={20} className="mr-2" />
-                      {profile.phone}
-                    </p>
-                    <p className="flex items-center text-gray-600  hover:bg-blue-600 p-2 hover:shadow-md hover:text-white rounded-full">
-                      <Mail size={20} className="mr-2" />
-                      {profile.email}
-                    </p>
+                    {/* User phone/email displayed elsewhere if needed */}
                     <p className="flex items-center text-gray-600  hover:bg-blue-600 p-2 hover:shadow-md hover:text-white rounded-full hover:underline">
                       <Linkedin size={20} className="mr-2" />
                       <a href={profile.linkedinURL} target="_blank" rel="noopener noreferrer" className="  ">

@@ -1,18 +1,48 @@
 
 const PlacementYear = require('../models/PlacementDetails');
 
+// Helper to normalize and validate branch entries
+const normalizeBranches = (branches) => {
+  if (!Array.isArray(branches)) return null;
+  return branches.map((b) => ({
+    branchName: String(b.branchName || '').trim(),
+    sanctionedIntake: Number(b.sanctionedIntake),
+    eligibleInterestedStudents: Number(b.eligibleInterestedStudents),
+    totalPlacementIncludingHigherEducation: Number(b.totalPlacementIncludingHigherEducation),
+    doubleOffers: Number(b.doubleOffers),
+    noOfCompaniesVisited: Number(b.noOfCompaniesVisited),
+    placementPercentage: Number(b.placementPercentage),
+    minimumPackageLPA: Number(b.minimumPackageLPA),
+    maximumPackageLPA: Number(b.maximumPackageLPA),
+    averagePackageLPA: Number(b.averagePackageLPA),
+  }));
+};
+
 const createPlacementYear = async (req, res) => {
   try {
     const { year, branches } = req.body;
-    
+    const parsedYear = Number(year);
+    if (!parsedYear || !Array.isArray(branches)) {
+      return res.status(400).json({ message: 'Invalid payload: year and branches are required' });
+    }
+
+    const normalizedBranches = normalizeBranches(branches);
+    if (!normalizedBranches) {
+      return res.status(400).json({ message: 'Invalid branches format' });
+    }
+
     const placementYear = new PlacementYear({
-      year,
-      branches
+      year: parsedYear,
+      branches: normalizedBranches,
     });
 
     await placementYear.save();
     res.status(201).json({ message: 'Placement Year data created successfully!', placementYear });
   } catch (err) {
+    // Handle duplicate year error gracefully
+    if (err.code === 11000) {
+      return res.status(409).json({ message: 'Placement Year already exists' });
+    }
     res.status(500).json({ message: 'Error creating Placement Year', error: err.message });
   }
 };
@@ -37,9 +67,14 @@ const editPlacementYear = async (req, res) => {
     const { year } = req.params;
     const { branches } = req.body;
 
+    if (!Array.isArray(branches)) {
+      return res.status(400).json({ message: 'Invalid branches format' });
+    }
+    const normalizedBranches = normalizeBranches(branches);
+
     const updatedPlacementYear = await PlacementYear.findOneAndUpdate(
-      { year },
-      { $set: { branches } },
+      { year: Number(year) },
+      { $set: { branches: normalizedBranches } },
       { new: true }
     );
 

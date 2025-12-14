@@ -4,164 +4,69 @@ const User = require("../models/User");
 // Get all admins
 const getAllAdmins = async (req, res) => {
   try {
-    // Fetch all admins and populate the jobPosted array with job details
     const admins = await AdminDetails.find().populate("jobPosted");
     res.status(200).json(admins);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error, please try again later" });
+    res.status(500).json({ message: "Server error" });
   }
 };
 
-// Create a new admin
+// Create or update admin profile
 const createAdmin = async (req, res) => {
-  const { _id, name, phone } = req.body;
-
-  // Basic validation
-  if (!_id || !name || !phone) {
-    return res.status(400).json({ message: "All fields are required" });
-  }
-
+  const { _id, name } = req.body;
+  if (!_id || !name) return res.status(400).json({ message: "All fields required" });
   try {
-    // Check if the user exists and has admin role
-    const user = await User.findById(_id);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+    let admin = await AdminDetails.findById(_id);
+    if (admin) {
+      admin.name = name;
+      await admin.save();
+      return res.status(200).json({ message: "Admin updated", admin });
     }
-
-    if (user.role !== "admin") {
-      return res.status(400).json({ message: "User must have admin role" });
-    }
-
-    // Check if the admin details already exist
-    const existingAdmin = await AdminDetails.findById(_id);
-    if (existingAdmin) {
-      // Update existing admin details
-      existingAdmin.name = name;
-      existingAdmin.phone = phone;
-      await existingAdmin.save();
-      
-      return res.status(200).json({
-        message: "Admin details updated successfully",
-        admin: existingAdmin,
-      });
-    }
-
-    // Create new admin details
-    const newAdmin = new AdminDetails({
-      _id, // Use _id as the identifier, linked to the User model
-      name,
-      phone,
-      jobPosted: [], // This will be populated later with jobs
-    });
-
-    await newAdmin.save();
-    res.status(201).json({
-      message: "Admin created successfully",
-      admin: newAdmin,
-    });
+    admin = new AdminDetails({ _id, name, jobPosted: [] });
+    await admin.save();
+    res.status(201).json({ message: "Admin created", admin });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error, please try again later" });
+    res.status(500).json({ message: "Server error" });
   }
 };
 
-// Get admin profile by ID
-const getAdminProfile = async (req, res) => {
-  try {
-    const { id } = req.params;
-    
-    // Find admin details by ID
-    const admin = await AdminDetails.findById(id).populate("jobPosted");
-    if (!admin) {
-      return res.status(404).json({ message: "Admin not found" });
-    }
+// Legacy getAdminProfile removed; use current admin routes
 
-    res.status(200).json(admin);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error, please try again later" });
-  }
-};
-
-// Get current admin's own profile
+// Get current admin profile
 const getCurrentAdminProfile = async (req, res) => {
   try {
-    // req.user is set by the protect middleware
     const adminId = req.user._id;
-    
-    // Find admin details by ID
     const admin = await AdminDetails.findById(adminId).populate("jobPosted");
-    if (!admin) {
+    if (!admin)
       return res.status(404).json({ message: "Admin profile not found" });
-    }
-
     res.status(200).json(admin);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error, please try again later" });
+    res.status(500).json({ message: "Server error" });
   }
 };
 
-// Update admin details
-const updateAdmin = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { name, phone } = req.body;
+// Legacy updateAdmin removed; use updateCurrentAdminProfile
 
-    // Find and update admin details
-    const admin = await AdminDetails.findByIdAndUpdate(
-      id,
-      { name, phone },
-      { new: true, runValidators: true }
-    );
-
-    if (!admin) {
-      return res.status(404).json({ message: "Admin not found" });
-    }
-
-    res.status(200).json({
-      message: "Admin details updated successfully",
-      admin,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error, please try again later" });
-  }
-};
-
-// Update current admin's own profile
+// Update current admin profile
 const updateCurrentAdminProfile = async (req, res) => {
   try {
     const adminId = req.user._id;
-    const { name, phone } = req.body;
-
-    // Find and update admin details
+    const { name } = req.body;
     const admin = await AdminDetails.findByIdAndUpdate(
       adminId,
-      { name, phone },
+      { name },
       { new: true, runValidators: true }
     );
-
-    if (!admin) {
-      return res.status(404).json({ message: "Admin profile not found" });
-    }
-
-    res.status(200).json({
-      message: "Profile updated successfully",
-      admin,
-    });
+    if (!admin) return res.status(404).json({ message: "Admin profile not found" });
+    res.status(200).json({ message: "Profile updated", admin });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error, please try again later" });
+    res.status(500).json({ message: "Server error" });
   }
 };
 
 module.exports = {
   createAdmin,
   getAllAdmins,
-  getAdminProfile,
   getCurrentAdminProfile,
-  updateAdmin,
   updateCurrentAdminProfile,
 };

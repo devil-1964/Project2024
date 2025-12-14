@@ -1,31 +1,37 @@
 import { useEffect, useState } from 'react'
 import { jwtDecode } from 'jwt-decode';
 import { ArrowUpRightFromSquareIcon, Loader } from 'lucide-react';
-import axios from 'axios';
+import apiClient from '../api/client';
 
 const AppliedJobs = () => {
     const [jobs, setJobs] = useState(null);
     const [loading, setLoading] = useState(true);
-    const fetchUserData = async (userId) => {
+    const fetchAppliedJobs = async () => {
         try {
-            const token = localStorage.getItem('Authorization');
-            const response = await axios.get(`${import.meta.env.VITE_URL_API}/api/student/${userId}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
+            // Get applied job IDs
+            const idsRes = await apiClient.get('/api/student/applied/list');
+            const payload = idsRes.data;
+            const ids = Array.isArray(payload) ? payload : (payload?.appliedJobIds || payload?.ids || []);
 
-            const data = response.data;
-            // setUserData(data);
-
-            // Set job applications if available
-            if (data.jobApplied) {
-                // console.log(data.jobApplied)
-                setJobs(data.jobApplied );
-                setLoading(false)
+            if (!ids.length) {
+                setJobs([]);
+                setLoading(false);
+                return;
             }
+
+            // Fetch job details for each ID
+            const detailPromises = ids.map(id => apiClient.get(`/api/jobs/${id}`));
+            const detailResponses = await Promise.allSettled(detailPromises);
+            const jobDetails = detailResponses
+                .filter(r => r.status === 'fulfilled')
+                .map(r => r.value.data);
+
+            setJobs(jobDetails);
+            setLoading(false);
         } catch (error) {
-            console.error('Failed to fetch user data:', error.response ? error.response.data : error.message);
+            console.error('Failed to fetch applied jobs:', error.response ? error.response.data : error.message);
+            setJobs([]);
+            setLoading(false);
         }
     };
 
@@ -37,9 +43,8 @@ const AppliedJobs = () => {
         const token = localStorage.getItem('Authorization');
         if (token) {
             try {
-                const decoded = jwtDecode(token);
-                const userId = decoded.userId;
-                fetchUserData(userId);
+                jwtDecode(token);
+                fetchAppliedJobs();
             } catch (error) {
                 console.error('Failed to decode token:', error);
             }
@@ -67,7 +72,7 @@ const AppliedJobs = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {jobs?.length>0 &&
+                    {jobs?.length>0 ?
                         jobs.map((job, index) => (
                             <tr key={index} className="border-b hover:bg-gray-100">
                                 <td className="py-4 px-6 text-center text-lg border">{index + 1}</td>
@@ -79,7 +84,11 @@ const AppliedJobs = () => {
                                     </a>
                                 </td>
                             </tr>
-                        ))
+                        )) : (
+                            <tr>
+                                <td colSpan="4" className="py-6 px-6 text-center text-gray-600">No applied jobs yet.</td>
+                            </tr>
+                        )
                     }
                 </tbody>
             </table>

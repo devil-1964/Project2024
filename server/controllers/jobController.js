@@ -20,26 +20,26 @@ const applyForJob = async (req, res) => {
       return res.status(404).json({ message: "Job not found" });
     }
 
+    // Optional: prevent applications after deadline
+    if (job.lastDateToApply && new Date(job.lastDateToApply) < new Date()) {
+      return res.status(400).json({ message: "Application window has closed" });
+    }
+
     // Check if the student exists
     const student = await StudentDetails.findById(userId);
     if (!student) {
       return res.status(404).json({ message: "Student not found" });
     }
 
-    // Add jobId to the student's jobApplied array (if not already applied)
-    if (!student.jobApplied.includes(jobId)) {
-      student.jobApplied.push(jobId);
-      await student.save();
-    } else {
-      return res
-        .status(200)
-        .json({ message: "Student has already applied for this job" });
+    // Add jobId to the student's jobApplied array without duplicates
+    const alreadyApplied = student.jobApplied.some((id) => id.equals(job._id));
+    if (alreadyApplied) {
+      return res.status(200).json({ message: "Student has already applied for this job" });
     }
+    student.jobApplied.push(job._id);
+    await student.save();
 
-    res.status(200).json({
-      message: "Job application successful",
-      student,
-    });
+    res.status(200).json({ message: "Job application successful", student });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error, please try again later" });
@@ -56,33 +56,37 @@ const createJobApplication = async (req, res) => {
   }
 
   try {
+    // Normalize fields to match schema types
+    const normalizedSkills = Array.isArray(requiredSkills)
+      ? requiredSkills
+      : String(requiredSkills)
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+
+    const normalizedDate = new Date(lastDateToApply);
+
     // Create a new job application
     const newJobApplication = new JobApplication({
       jobTitle,
       jobDescription,
       location,
       company,
-      lastDateToApply,
-      requiredSkills,
+      lastDateToApply: normalizedDate,
+      requiredSkills: normalizedSkills,
     });
 
-    // Save the job application to the database
     await newJobApplication.save();
 
-    // Find the admin by adminId and link the job to the admin's jobPosted array
+    // Link job to admin
     const adminDetails = await AdminDetails.findById(adminId);
     if (!adminDetails) {
       return res.status(404).json({ message: "Admin not found" });
     }
-
-    // Add the job to the admin's jobPosted array
     adminDetails.jobPosted.push(newJobApplication._id);
     await adminDetails.save();
 
-    res.status(201).json({
-      message: "Job application created successfully and linked to admin",
-      jobApplication: newJobApplication,
-    });
+    res.status(201).json({ message: "Job application created successfully and linked to admin", jobApplication: newJobApplication });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error, please try again later" });
@@ -184,5 +188,5 @@ module.exports = {
   editJobApplication,
   deleteJobApplication,
   applyForJob,
-  exportApplicants, // Add the export handler
+  exportApplicants, 
 };

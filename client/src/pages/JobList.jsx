@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import axios from 'axios';
+import api from '../api/client';
 import toast from 'react-hot-toast';
 import moment from "moment"
 import { useNavigate } from 'react-router-dom';
@@ -10,6 +10,7 @@ const JobList = ({ userRole, isId }) => {
     const [jobs, setJobs] = useState([]);
     const [selectedJobId, setSelectedJobId] = useState(null);
     const [loading, setLoading] = useState(true)
+    const [appliedIds, setAppliedIds] = useState([])
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const navigate = useNavigate();
     const id = isId
@@ -20,11 +21,7 @@ const JobList = ({ userRole, isId }) => {
     // Fetch job list from the server
     const fetchJobs = async () => {
         try {
-            const response = await axios.get(`${import.meta.env.VITE_URL_API}/api/jobs`, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('Authorization')}`,
-                },
-            });
+            const response = await api.get(`/api/jobs`);
             // console.log(response)
             setJobs(response.data);
             setLoading(false)
@@ -36,6 +33,17 @@ const JobList = ({ userRole, isId }) => {
 
     useEffect(() => {
         fetchJobs();
+        const loadApplied = async () => {
+            try {
+                const res = await api.get('/api/student/applied/list');
+                const payload = res.data;
+                const ids = Array.isArray(payload) ? payload : (payload?.appliedJobIds || payload?.ids || []);
+                setAppliedIds(ids);
+            } catch (e) {
+                setAppliedIds([]);
+            }
+        };
+        if (!isAdmin) loadApplied();
     }, []);
 
     // Open delete modal
@@ -46,16 +54,10 @@ const JobList = ({ userRole, isId }) => {
 
     // Handle job deletion
     const handleDelete = async () => {
-        // console.log(isId)
         try {
-            await axios.delete(`${import.meta.env.VITE_URL_API}/api/jobs/${selectedJobId}/`, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('Authorization')}`,
-                },
-                data: { adminId: id }, // Correct placement of data
-            });
+            await api.delete(`/api/jobs/${selectedJobId}/`, { data: { adminId: id } });
             toast.success('Job deleted successfully!');
-            setJobs(jobs.filter((job) => job._id !== selectedJobId)); // Update state
+            setJobs(jobs.filter((job) => job._id !== selectedJobId));
         } catch (error) {
             console.error('Error deleting job:', error);
             toast.error('Failed to delete job. Please try again.');
@@ -74,14 +76,9 @@ const JobList = ({ userRole, isId }) => {
 
         try {
             // Send POST request to apply for a job
-            const token = localStorage.getItem('Authorization');
-            const response = await axios.post(`${import.meta.env.VITE_URL_API}/api/jobs/apply`, {
+            const response = await api.post(`/api/jobs/apply`, {
                 userId: id,    // The ID of the user applying
                 jobId: jobId   // The ID of the job being applied for
-            }, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
             });
 
             // Assuming the API sends a success message or status
@@ -89,9 +86,7 @@ const JobList = ({ userRole, isId }) => {
                 toast.success('Job application submitted successfully!');
 
                 // Update job status in the UI to reflect application
-                setJobs(jobs.map((job) =>
-                    job._id === jobId ? { ...job, applied: true } : job  // Mark job as applied
-                ));
+                setAppliedIds(prev => [...prev, jobId]);
             }
             else if (response.data.message === 'Student has already applied for this job') {
                 toast.success('Student has already applied for this job')
@@ -107,7 +102,7 @@ const JobList = ({ userRole, isId }) => {
                 console.error('Error response:', error.response.data);
             }
 
-            toast.error(error.response.data.message);
+            toast.error(error.response?.data?.message || 'Error applying for job');
         }
     };
 
@@ -122,33 +117,17 @@ const JobList = ({ userRole, isId }) => {
     // Export job applicants
     const handleExport = async (jobId) => {
         try {
-            // Trigger the export by making a GET request to the backend
-            const response = await fetch(`${import.meta.env.VITE_URL_API}/api/jobs/${jobId}/export`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            // Check if the response is successful (status code 200)
-            if (response.ok) {
-                // Create a link element to trigger the file download
-                const blob = await response.blob();  // Get the file content as a Blob
-                const url = window.URL.createObjectURL(blob);  // Create an object URL for the blob
-                const a = document.createElement('a');  // Create an anchor element
-                a.href = url;  // Set the href to the object URL
-                a.download = `job_${jobId}_applicants.xlsx`;  // Set the download filename
-                a.click();  // Programmatically trigger the click to start downloading
-                toast.success("Starting Download");
-                window.URL.revokeObjectURL(url);  // Clean up the object URL
-            } else {
-                const errorData = await response.json();
-                console.error("Error exporting file:", errorData.message || 'Unknown error');
-                toast.error(errorData.message);
-            }
+            const response = await api.get(`/api/jobs/${jobId}/export`, { responseType: 'blob' });
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `job_${jobId}_applicants.xlsx`;
+            a.click();
+            toast.success('Starting Download');
+            window.URL.revokeObjectURL(url);
         } catch (error) {
-            console.error("Network error:", error);
-            toast.error('Error exporting file. Please check your network connection and try again.');
+            console.error('Error exporting file:', error);
+            toast.error(error.response?.data?.message || 'Error exporting file.');
         }
     };
 
@@ -231,10 +210,11 @@ const JobList = ({ userRole, isId }) => {
                                     </button>
 
                                     <button
-                                        className={`bg-blue-500 hover:bg-blue-600 w-full  text-white px-4 py-2 mt-4 rounded-lg  transition duration-300 ease-in-out`}
+                                        disabled={appliedIds.includes(job._id)}
+                                        className={`w-full text-white px-4 py-2 mt-4 rounded-lg transition duration-300 ease-in-out ${appliedIds.includes(job._id) ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'}`}
                                         onClick={() => handleApply(job._id)}
                                     >
-                                        Apply Now
+                                        {appliedIds.includes(job._id) ? 'Applied' : 'Apply Now'}
                                     </button>
                                 </div>
                             )
@@ -271,8 +251,8 @@ const JobList = ({ userRole, isId }) => {
 };
 
 JobList.propTypes = {
-    userRole: PropTypes.string.isRequired,
-    isId: PropTypes.string.isRequired
+    userRole: PropTypes.string,
+    isId: PropTypes.string
 };
 
 export default JobList;

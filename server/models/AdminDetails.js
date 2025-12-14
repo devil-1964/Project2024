@@ -11,10 +11,6 @@ const adminDetailsSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    phone: {
-      type: String,
-      required: true,
-    },
     jobPosted: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -27,12 +23,7 @@ const adminDetailsSchema = new mongoose.Schema(
   }
 );
 
-// Use `userId` as `_id` when creating a new AdminDetails document
-adminDetailsSchema.pre("validate", function (next) {
-  if (!this._id) {
-    this._id = this.user; // Set _id to user ID
-  }
-  next();
-});
+// Keep explicit _id linkage to User
+adminDetailsSchema.index({ _id: 1 });
 
 module.exports = mongoose.model("AdminDetails", adminDetailsSchema);
