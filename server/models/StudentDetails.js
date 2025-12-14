@@ -4,7 +4,7 @@ const studentDetailsSchema = new mongoose.Schema(
   {
     _id: {
       type: mongoose.Schema.Types.ObjectId, // Use _id as a reference to User
-      ref: "User", 
+      ref: "User",
       required: true,
     },
     name: {
@@ -19,14 +19,7 @@ const studentDetailsSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    phone: {
-      type: String,
-      required: true,
-    },
-    email: {
-      type: String,
-      required: true,
-    },
+    // phone/email sourced from User
     linkedinURL: {
       type: String,
     },
@@ -37,8 +30,9 @@ const studentDetailsSchema = new mongoose.Schema(
       type: String,
     },
     semCgpa: {
-      type: [Number], // Array of CGPA for each semester
+      type: [Number],
       required: true,
+      default: [],
     },
     activeBacklogs: {
       type: Number,
@@ -53,5 +47,8 @@ const studentDetailsSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+studentDetailsSchema.index({ _id: 1 });
+studentDetailsSchema.index({ branch: 1, batchYear: 1 });
 
 module.exports = mongoose.model("StudentDetails", studentDetailsSchema);
